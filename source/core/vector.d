@@ -1,8 +1,11 @@
 import std.algorithm.iteration;
 import std.algorithm.mutation;
+import std.algorithm;
 import std.math;
 import std.array;
 import std.range;
+import std.stdio;
+import std.encoding;
 
 /// Fully generic vector types !
 struct Vec(int dim, T) {
@@ -14,16 +17,37 @@ struct Vec(int dim, T) {
     alias Self = Vec!(dim, T);
 
     /// Scalar multiplication
-    pure Self opBinary(string s)(T scalar) if (s == "*") {
+    pure Self opBinary(string s)(const T scalar) if (s == "*") {
         Self newVec;
         newVec.data = map!((T a) => a * scalar)(data[]).array();
         return newVec;
     }
 
     /// Dot product
-    pure Self opBinary(string s)(Self rhs) if (s == "*") {
+    pure Self opBinary(string s)(const Self rhs) const if (s == "*") {
         Self newVec;
         newVec.data = zip(this.data[], rhs.data[]).map!(tuple => tuple[0] * tuple[1]).array();
+        return newVec;
+    }
+
+    /// Vector add
+    pure Self opBinary(string s)(const Self rhs) const if (s == "+") {
+        Self newVec;
+        newVec.data = zip(this.data[], rhs.data[]).map!(tuple => tuple[0] + tuple[1]).array();
+        return newVec;
+    }
+
+    /// Vector sub
+    pure Self opBinary(string s)(const Self rhs) const if (s == "-") {
+        Self newVec;
+        newVec.data = zip(this.data[], rhs.data[]).map!(tuple => tuple[0] - tuple[1]).array();
+        return newVec;
+    }
+
+    /// Vector negation
+    pure Self opUnary(string s)() const if (s == "-") {
+        Self newVec;
+        newVec.data =  map!((T a) => -a)(data[]).array();
         return newVec;
     }
 
@@ -35,29 +59,64 @@ struct Vec(int dim, T) {
         return sqrt(this.lengthSquared());
     }
 
+    pure T distanceSquared(Self rhs) {
+        return (this - rhs).lengthSquared();
+    }
+
     pure Self normalize()() if(__traits(isFloating, T)) {
         T invLength = T(1.0) / this.length();
         return this * invLength;
     }
 
-    /// Returns a reference to the first component of the vector
-    pure ref T x()() if(dim >= 1) {
-        return data[0];
+    static immutable string[] shorthands = ["x", "y", "z", "w"];
+    static immutable char[] shorthandsChar = ['x', 'y', 'z', 'w'];
+
+    pure static bool isShortHandName(string s) {
+        foreach(e ; s) {
+            if(!shorthandsChar.canFind(e)) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    /// Returns a reference to the second component of the vector
-    pure ref T y()() if(dim >= 2) {
-        return data[1];
+    /*pure const auto opDispatch(string s)() if(isShortHandName(s)) {
+        if(s.length > 1) {
+            Vec!(s.length, T) target;
+            foreach(i, e; s) {
+                int i2 = cast(int)(shorthandsChar.countUntil(e));
+                target.data[i] = data[i2];
+            }
+            return target;
+        } else {
+            int i = cast(int)(shorthands.countUntil(s));
+            float target = data[i];
+            return target;
+        }
+    }*/
+
+    /// Const access over one named member
+    pure const auto opDispatch(string s)() if(isShortHandName(s) && s.length == 1) {
+        int i = cast(int)(shorthands.countUntil(s));
+        return data[i];
     }
 
-    /// Returns a reference to the third component of the vector
-    pure ref T z()() if(dim >= 3) {
-        return data[2];
+    /// Compile time swizzling
+    pure const auto opDispatch(string s)() if(isShortHandName(s) && s.length > 1) {
+        Vec!(s.length, T) target;
+        foreach(i, e; s) {
+            int i2 = cast(int)(shorthandsChar.countUntil(e));
+            target.data[i] = data[i2];
+        }
+        return target;
     }
 
-    /// Returns a reference to the fourth component of the vector
-    pure ref T w()() if(dim >= 4) {
-        return data[3];
+    /// Mutable access over one named member
+    pure ref auto opDispatch(string s)() if(isShortHandName(s) && s.length == 1) {
+        if(s.length == 1) {
+            int i = cast(int)(shorthands.countUntil(s));
+            return data[i];
+        }
     }
 
     this(T scalar) {
@@ -69,8 +128,13 @@ struct Vec(int dim, T) {
     }
 }
 
+pure static T dot(int dim, T)(const ref Vec!(dim, T) lhs, const ref Vec!(dim, T) rhs) {
+    return zip(lhs.data[], rhs.data[]).map!(tuple => tuple[0] * tuple[1]).fold!((acc, value) => acc + value * value);
+}
+
 /// Cross product
-Vec!(3, T) cross(T)(Vec!(3, T) a, Vec!(3, T) b) {
+Vec!(3, T) cross(T)(const ref Vec!(3, T) a, const ref Vec!(3, T) b) {
+    const float aa = a.y();
     Vec!(3, T) vec = [
                     a.y * b.z - a.z * b.y,
                     a.z * b.x - a.x * b.z,

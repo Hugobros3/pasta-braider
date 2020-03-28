@@ -1,6 +1,8 @@
 import ray;
 
-class Scene(PrimitiveType) {
+class Scene(PrimitiveType) 
+    if(__traits(compiles, PrimitiveType.intersect))
+{
     PrimitiveType[] primitives;
 }
 
