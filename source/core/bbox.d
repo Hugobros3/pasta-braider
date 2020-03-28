@@ -1,4 +1,4 @@
-import vectors;
+import vector;
 
 struct BBox(int dim, T) {
     Vec!(dim, T) min, max;

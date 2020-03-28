@@ -31,11 +31,11 @@ struct Vec(int dim, T) {
         return data.fold!((acc, value) => acc + value * value);
     }
 
-    pure T length() {
+    pure T length()() if(__traits(isFloating, T)) {
         return sqrt(this.lengthSquared());
     }
 
-    pure Self normalize() {
+    pure Self normalize()() if(__traits(isFloating, T)) {
         T invLength = T(1.0) / this.length();
         return this * invLength;
     }
@@ -69,10 +69,18 @@ struct Vec(int dim, T) {
     }
 }
 
+/// Cross product
+Vec!(3, T) cross(T)(Vec!(3, T) a, Vec!(3, T) b) {
+    Vec!(3, T) vec = [
+                    a.y * b.z - a.z * b.y,
+                    a.z * b.x - a.x * b.z,
+                    a.x * b.y - a.y * b.x];
+    return vec;
+}
+
 alias Vec2f = Vec!(2, float);
 alias Vec3f = Vec!(3, float);
 alias Vec4f = Vec!(4, float);
 
-//alias Vec3i = Vec!(3, int);
-//alias Vec0f = Vec!(0, float);
-alias Vec3d = Vec!(3, double);
+alias Vec2i = Vec!(2, int);
+alias Vec3i = Vec!(3, int);

@@ -1,10 +1,8 @@
 import std.stdio;
 import bbox;
-import vectors;
+import vector;
 
-void main()
-{
-	BBox3f bbox;
+void main() {
 	Vec3f vec = ( 0.0f );
 	Vec3f vec2 = [ 0.0f, 0.0f, 0.05f ];
 
@@ -14,5 +12,6 @@ void main()
 	//vec.w = 4.0;
 	writeln(vec.normalize());
 	writeln(vec * vec);
+	writeln(vec.cross(vec));
 	writeln(vec.x());
 }
