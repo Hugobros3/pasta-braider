@@ -1,0 +1,9 @@
+{
+	"name": "pasta-braider",
+	"authors": [
+		"hugolocal"
+	],
+	"description": "Raytracer in D",
+	"copyright": "Copyright © 2020, hugolocal",
+	"license": "proprietary"
+}
