@@ -17,61 +17,48 @@ struct Vec(int dim, T) {
     alias Self = Vec!(dim, T);
 
     /// Scalar multiplication
-    pure Self opBinary(string s)(const T scalar) if (s == "*") {
+    @nogc pure Self opBinary(string s)(const T scalar) const if (s == "*") {
         Self newVec;
-        newVec.data = map!((T a) => a * scalar)(data[]).array();
+        copy(data[].zip(scalar.repeat).map!(a => a[0] * a[1]), newVec.data[]);
         return newVec;
     }
 
-    /// Dot product
-    pure Self opBinary(string s)(const Self rhs) const if (s == "*") {
+    private static immutable string[] vectorOperators = ["*", "/", "+", "-"];
+    /// Traditional operations extended to vectors
+    @nogc pure Self opBinary(string s)(const Self rhs) const if (vectorOperators.canFind(s)) {
         Self newVec;
-        newVec.data = zip(this.data[], rhs.data[]).map!(tuple => tuple[0] * tuple[1]).array();
-        return newVec;
-    }
-
-    /// Vector add
-    pure Self opBinary(string s)(const Self rhs) const if (s == "+") {
-        Self newVec;
-        newVec.data = zip(this.data[], rhs.data[]).map!(tuple => tuple[0] + tuple[1]).array();
-        return newVec;
-    }
-
-    /// Vector sub
-    pure Self opBinary(string s)(const Self rhs) const if (s == "-") {
-        Self newVec;
-        newVec.data = zip(this.data[], rhs.data[]).map!(tuple => tuple[0] - tuple[1]).array();
+        copy(zip(this.data[], rhs.data[]).map!(tuple => mixin("tuple[0]" ~ s ~ "tuple[1]")), newVec.data[]);
         return newVec;
     }
 
     /// Vector negation
-    pure Self opUnary(string s)() const if (s == "-") {
+    @nogc pure Self opUnary(string s)() const if (s == "-") {
         Self newVec;
-        newVec.data =  map!((T a) => -a)(data[]).array();
+        copy(this.data[].map!(a => -a), newVec.data[]);
         return newVec;
     }
 
-    pure T lengthSquared() {
+    @nogc pure T lengthSquared() const {
         return data.fold!((acc, value) => acc + value * value);
     }
 
-    pure T length()() if(__traits(isFloating, T)) {
+    @nogc pure T length()() const if(__traits(isFloating, T)) {
         return sqrt(this.lengthSquared());
     }
 
-    pure T distanceSquared(Self rhs) {
+    @nogc pure T distanceSquared(Self rhs) const {
         return (this - rhs).lengthSquared();
     }
 
-    pure Self normalize()() if(__traits(isFloating, T)) {
+    @nogc pure Self normalize()() const if(__traits(isFloating, T)) {
         T invLength = T(1.0) / this.length();
         return this * invLength;
     }
 
-    static immutable string[] shorthands = ["x", "y", "z", "w"];
-    static immutable char[] shorthandsChar = ['x', 'y', 'z', 'w'];
+    private static immutable char[] shorthandsChar = ['x', 'y', 'z', 'w'];
 
-    pure static bool isShortHandName(string s) {
+    // Not non-gc but it doesn't matter since this is only ever called at compile time!
+    private pure static bool isSwizzleName(string s) {
         foreach(e ; s) {
             if(!shorthandsChar.canFind(e)) {
                 return false;
@@ -96,13 +83,13 @@ struct Vec(int dim, T) {
     }*/
 
     /// Const access over one named member
-    pure const auto opDispatch(string s)() if(isShortHandName(s) && s.length == 1) {
-        int i = cast(int)(shorthands.countUntil(s));
+    @nogc pure const auto opDispatch(string s)() if(isSwizzleName(s) && s.length == 1) {
+        int i = cast(int)(shorthandsChar.countUntil(s[0]));
         return data[i];
     }
 
     /// Compile time swizzling
-    pure const auto opDispatch(string s)() if(isShortHandName(s) && s.length > 1) {
+    @nogc pure const auto opDispatch(string s)() if(isSwizzleName(s) && s.length > 1) {
         Vec!(s.length, T) target;
         foreach(i, e; s) {
             int i2 = cast(int)(shorthandsChar.countUntil(e));
@@ -112,9 +99,9 @@ struct Vec(int dim, T) {
     }
 
     /// Mutable access over one named member
-    pure ref auto opDispatch(string s)() if(isShortHandName(s) && s.length == 1) {
+    @nogc pure ref auto opDispatch(string s)() if(isSwizzleName(s) && s.length == 1) {
         if(s.length == 1) {
-            int i = cast(int)(shorthands.countUntil(s));
+            int i = cast(int)(shorthandsChar.countUntil(s[0]));
             return data[i];
         }
     }
@@ -128,13 +115,13 @@ struct Vec(int dim, T) {
     }
 }
 
-pure static T dot(int dim, T)(const ref Vec!(dim, T) lhs, const ref Vec!(dim, T) rhs) {
-    return zip(lhs.data[], rhs.data[]).map!(tuple => tuple[0] * tuple[1]).fold!((acc, value) => acc + value * value);
+/// Dot product
+@nogc pure T dot(int dim, T)(const ref Vec!(dim, T) lhs, const ref Vec!(dim, T) rhs) {
+    return (lhs * rhs).data.reduce!((T acc, T value) => acc + value * value);
 }
 
-/// Cross product
-Vec!(3, T) cross(T)(const ref Vec!(3, T) a, const ref Vec!(3, T) b) {
-    const float aa = a.y();
+/// Cross product (3d specialized version)
+@nogc pure Vec!(3, T) cross(T)(const ref Vec!(3, T) a, const ref Vec!(3, T) b) {
     Vec!(3, T) vec = [
                     a.y * b.z - a.z * b.y,
                     a.z * b.x - a.x * b.z,

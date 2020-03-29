@@ -1,9 +1,13 @@
 {
-	"name": "pasta-braider",
 	"authors": [
 		"hugolocal"
 	],
-	"description": "Raytracer in D",
 	"copyright": "Copyright © 2020, hugolocal",
-	"license": "proprietary"
+	"dependencies": {
+		"bindbc-assimp": "~>0.0.1",
+		"bindbc-sdl": "~>0.15.0"
+	},
+	"description": "Raytracer in D",
+	"license": "proprietary",
+	"name": "pasta-braider"
 }
