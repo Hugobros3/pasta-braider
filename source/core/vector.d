@@ -7,6 +7,11 @@ import std.range;
 import std.stdio;
 import std.encoding;
 
+void ctfe_valid(T, T value)() {
+    static assert(is(typeof(value)));
+	//pragma(msg, value);
+}
+
 /// Fully generic vector types !
 struct Vec(int dim, T) {
     static assert(dim > 0, "What kind of vector is this even supposed to be");
@@ -67,6 +72,15 @@ struct Vec(int dim, T) {
         return true;
     }
 
+    private pure static int swizzleIndex(char c) {
+        foreach(i, e ; shorthandsChar) {
+            if(e == c) {
+                return cast(int)i;
+            }
+        }
+        return -1;
+    }
+
     /*pure const auto opDispatch(string s)() if(isShortHandName(s)) {
         if(s.length > 1) {
             Vec!(s.length, T) target;
@@ -84,16 +98,17 @@ struct Vec(int dim, T) {
 
     /// Const access over one named member
     @nogc pure const auto opDispatch(string s)() if(isSwizzleName(s) && s.length == 1) {
-        int i = cast(int)(shorthandsChar.countUntil(s[0]));
+        immutable int i = swizzleIndex(s[0]);
+        ctfe_valid!(int, i)();
+        //ctfe_valid!(int, 0)();
         return data[i];
     }
 
     /// Compile time swizzling
     @nogc pure const auto opDispatch(string s)() if(isSwizzleName(s) && s.length > 1) {
         Vec!(s.length, T) target;
-        foreach(i, e; s) {
-            int i2 = cast(int)(shorthandsChar.countUntil(e));
-            target.data[i] = data[i2];
+		static foreach (int i; 0..s.length) {
+            mixin("target.data[",i,"] = data[",swizzleIndex(s[i]),"];");
         }
         return target;
     }
@@ -101,7 +116,8 @@ struct Vec(int dim, T) {
     /// Mutable access over one named member
     @nogc pure ref auto opDispatch(string s)() if(isSwizzleName(s) && s.length == 1) {
         if(s.length == 1) {
-            int i = cast(int)(shorthandsChar.countUntil(s[0]));
+            immutable int i = swizzleIndex(s[0]);
+			ctfe_valid!(int, i)();
             return data[i];
         }
     }

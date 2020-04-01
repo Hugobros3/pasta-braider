@@ -5,11 +5,20 @@ import std.algorithm;
 import std.regex;
 import bbox;
 import vector;
+import window;
 
 static immutable auto shorthandsRegex = regex("^([xyzw]+)$");
 
 bool compileTimeMatch(string s)() {
 	return matchFirst(s, shorthandsRegex).length() > 0;
+}
+
+int ctFactorial(int x)() {
+	int acc = 1;
+	foreach(t; 1..x) {
+		acc *= t;
+	}
+	return acc;
 }
 
 void main() {
@@ -18,6 +27,8 @@ void main() {
 	vec.x = 1.0f;
 	vec.z = 2.0f;
 	writeln(vec.zzzzz);
+	pragma(msg, ctFactorial!(7)());
+	//ctFactorial!(7)();
 
 	//writeln(vec.opDispatch!("xy")());
 	Vec3f r = vec.opDispatch!("xyz")();
@@ -36,4 +47,7 @@ void main() {
 	
 	writeln(compileTimeMatch!("x")());
 	writeln(matchFirst("x", shorthandsRegex).length() > 0);
+
+	scope Window window = new Window();
+	window.run();
 }

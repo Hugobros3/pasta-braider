@@ -1,16 +1,17 @@
 import vector;
 
 interface Film(ColorSpace) {
-    Vec2i size();
+    @nogc Vec2i size();
 
-    void clear();
-    void add(Vec2i position, ColorSpace contribution);
+    @nogc void clear();
+    @nogc void add(Vec2i position, ColorSpace contribution);
 
-    @nogc void draw(ColorSpace function(ref Film, Vec2i) renderFn)() {
+    /*@nogc void draw(ColorSpace function(void*, Vec2i) renderFn)() {
+		pragma(msg, T.stringof);
         foreach(x; 0 .. size.x) {
-            foreach(y; 0 .. sixe.z) {
-                renderFn(this, [x, y]);
+            foreach(y; 0 .. size.y) {
+                add(Vec2i([x, y]), renderFn(this, Vec2i ([x, y]) ) );
             }
         }
-    }
+    }*/
 }
