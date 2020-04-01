@@ -44,7 +44,7 @@ struct Vec(int dim, T) {
     }
 
     @nogc pure T lengthSquared() const {
-        return data.fold!((acc, value) => acc + value * value);
+        return data.fold!((acc, value) => acc + value * value)(cast(T)0);
     }
 
     @nogc pure T length()() const if(__traits(isFloating, T)) {
@@ -107,8 +107,8 @@ struct Vec(int dim, T) {
     /// Compile time swizzling
     @nogc pure const auto opDispatch(string s)() if(isSwizzleName(s) && s.length > 1) {
         Vec!(s.length, T) target;
-		static foreach (int i; 0..s.length) {
-            mixin("target.data[",i,"] = data[",swizzleIndex(s[i]),"];");
+		foreach (int i; 0..s.length) {
+			target.data[i] = data[swizzleIndex(s[i])];
         }
         return target;
     }
@@ -122,7 +122,7 @@ struct Vec(int dim, T) {
         }
     }
 
-    this(T scalar) {
+    this(T scalar) {    
         data[].fill(scalar);
     }
 
@@ -133,7 +133,7 @@ struct Vec(int dim, T) {
 
 /// Dot product
 @nogc pure T dot(int dim, T)(const ref Vec!(dim, T) lhs, const ref Vec!(dim, T) rhs) {
-    return (lhs * rhs).data.reduce!((T acc, T value) => acc + value * value);
+    return (lhs * rhs).data.fold!((T acc, T value) => acc + value);
 }
 
 /// Cross product (3d specialized version)

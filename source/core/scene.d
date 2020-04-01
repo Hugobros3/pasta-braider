@@ -4,6 +4,21 @@ class Scene(PrimitiveType)
     if(__traits(compiles, PrimitiveType.intersect))
 {
     PrimitiveType[] primitives;
+
+    @nogc Hit intersect(Ray ray) {
+        float t;
+        Hit hit;
+        foreach(primId, primitive; primitives) {
+            t = 0.0;
+            if(primitive.intersect(ray, t)) {
+                if(t < hit.t) {
+                    hit.primId = cast(int)primId;
+                    hit.t = t;
+				}
+			}
+		}
+        return hit;
+	}
 }
 
 interface AccelerationStructure(PrimitiveType) {

@@ -7,5 +7,5 @@ struct Ray {
 
 struct Hit {
     int primId = -1;
-    float t;
+    float t = float.infinity;
 }

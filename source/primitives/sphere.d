@@ -7,13 +7,13 @@ struct Sphere {
     Vec3f center;
     float radius;
 
-    bool intersect(const ref Ray ray, ref float t) {
-        const auto oc = ray.origin - center;
+    @nogc bool intersect(const ref Ray ray, ref float t) {
+        const auto oc = (ray.origin - center);//.normalize();
         const float a = dot(ray.direction, ray.direction);
         const float b = 2.0f * dot(oc, ray.direction);
         const float c = dot(oc, oc) - radius * radius;
 
-        const float discriminantSquared = b * 2 - 4 * a * c;
+        const float discriminantSquared = b * b - 4 * a * c;
 
         if (discriminantSquared < 0)
             return false;

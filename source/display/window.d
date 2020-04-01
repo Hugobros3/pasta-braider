@@ -1,12 +1,16 @@
 import std.algorithm.mutation;
 import std.algorithm.comparison;
 import std.random;
+import std.stdio;
 
 import film;
 import color;
 import vector;
 import camera;
 import ray;
+import scene;
+
+import sphere;
 
 import bindbc.sdl;
 
@@ -16,12 +20,13 @@ import bindbc.sdl;
 }
 
 class Window : Film!(RGB) {
-    private Vec2i _size = [1024, 1024];
+    private Vec2i _size = [512, 512];
     private RGB[] _pixels;
 
+    private Scene!Sphere scene = new Scene!Sphere();
     private Camera camera;
 
-    immutable RGB delegate(Film!RGB, Vec2i) drawCmd;
+    //immutable RGB delegate(Window, Vec2i) drawCmd;
 
     this() { 
         _pixels = new RGB[_size.x * _size.y];
@@ -46,14 +51,24 @@ class Window : Film!(RGB) {
         camera.position = Vec3f([0.0, 0.0, 0.0]);
         camera.lookingAt = Vec3f([1.0, 0.0, 0.0]);
 
-        drawCmd = delegate RGB(Film!RGB film, Vec2i pos) { 
-            Ray ray = generateRay(camera, film.size(), pos);
+        scene.primitives ~= Sphere(Vec3f([10.0, 0.0, 0.0]), 1.5f);
+
+        foreach(primId, primitive; scene.primitives) {
+            writeln(primitive);
+		}
+
+        /*drawCmd = delegate RGB(Window film, Vec2i pos) { 
+            Ray ray = generateRay(film.camera, film.size(), pos);
+            Hit hit = scene.intersect(ray);
+            if(hit.primId != -1) {
+				return RGB([1.0f, 0.0f, 0.0f]);
+			}
+
             return RGB([0.5f, 1.0f, 0.0f]);
-        };
+        };*/
     }    
     
     @nogc void draw(T)(RGB function (T, Vec2i) @nogc  renderFn) {
-        //pragma(msg, T.stringof);
         foreach(x; 0 .. size.x) {
             foreach(y; 0 .. size.y) {
                 add(Vec2i([x, y]), renderFn(this, Vec2i ([x, y]) ) );
@@ -75,11 +90,16 @@ class Window : Film!(RGB) {
 
         while (!quit) {
             clear();
-            //draw!(drawCmd)();
 
-            immutable auto render = function RGB(Window film, Vec2i pos) { 
+            immutable @nogc auto render = function RGB(Window film, Vec2i pos) @nogc { 
                 Ray ray = generateRay(film.camera, film.size(), pos);
-                return RGB([0.5f, 1.0f, 0.0f]);
+				Hit hit = film.scene.intersect(ray);
+				//return ray.direction;
+				if(hit.primId != -1) {
+					return RGB([1.0f, 0.0f, 0.0f]);
+				}
+
+				return RGB([0.0f, 0.5f, 1.0f]);
             };
 
             pragma(msg, typeof(render).stringof);
@@ -90,10 +110,10 @@ class Window : Film!(RGB) {
                     ubyte luminance = cast(ubyte)uniform(0, 255);
                     auto rgb = _pixels[((y * _size.x) + x)];
 
-                    buf[((y * _size.x) + x) * 4 + 0] = 0xFF;
-                    buf[((y * _size.x) + x) * 4 + 1] = cast(ubyte)clamp(cast(uint)(rgb.x * 255), 0, 255);
-                    buf[((y * _size.x) + x) * 4 + 2] = cast(ubyte)clamp(cast(uint)(rgb.y * 255), 0, 255);
-                    buf[((y * _size.x) + x) * 4 + 3] = cast(ubyte)clamp(cast(uint)(rgb.z * 255), 0, 255);
+                    buf[((y * _size.x) + x) * 4 + 3] = cast(ubyte)clamp(cast(int)(rgb.x * 255), 0, 255);
+                    buf[((y * _size.x) + x) * 4 + 2] = cast(ubyte)clamp(cast(int)(rgb.y * 255), 0, 255);
+                    buf[((y * _size.x) + x) * 4 + 1] = cast(ubyte)clamp(cast(int)(rgb.z * 255), 0, 255);
+                    buf[((y * _size.x) + x) * 4 + 0] = 0x00;
                 }
             }
             SDL_UpdateTexture(texture, null, cast(const(void*))(buf.ptr), cast(int)(size.x() * uint.sizeof));
