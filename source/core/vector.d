@@ -218,12 +218,13 @@ struct Vec(int dim, T) {
 
 /// Cross product (3d specialized version)
 pragma(inline, true)
-@nogc pure Vec!(3, T) cross(T)(const ref Vec!(3, T) a, const ref Vec!(3, T) b) {
-    Vec!(3, T) vec = [
+@nogc pure Vec3f cross(const ref Vec3f a, const ref Vec3f b) {
+    Vec3f v = a.yzx * b.zxy - a.zxy * b.yzx;
+    Vec3f vec = [
                     a.y * b.z - a.z * b.y,
                     a.z * b.x - a.x * b.z,
                     a.x * b.y - a.y * b.x];
-    return vec;
+    return v;
 }
 
 alias Vec2f = Vec!(2, float);
