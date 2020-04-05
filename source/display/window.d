@@ -123,8 +123,8 @@ class Window : Film!(RGB) {
 
             MonoTime frameDone = MonoTime.currTime;
             Duration frameDuration = frameDone - frameStart;
-            long msecs = frameDuration.total!"msecs"();
-            float fps = 1000.0 / cast(double)(msecs);
+            long usecs = frameDuration.total!"usecs"();
+            float fps = 1000_000.0 / cast(double)(usecs);
             const string title = ("FPS: " ~ to!string(fps));
             SDL_SetWindowTitle(window, toStringz(title) );
 
