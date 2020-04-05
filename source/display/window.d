@@ -112,7 +112,7 @@ class Window : Film!(RGB) {
 
             foreach(x ; 0 .. _size.x()) {
                 foreach(y ; 0 .. _size.y()) {
-                    ubyte luminance = cast(ubyte)uniform(0, 255);
+                    //ubyte luminance = cast(ubyte)uniform(0, 255);
                     auto rgb = _pixels[((y * _size.x) + x)];
 
                     buf[((y * _size.x) + x) * 4 + 3] = cast(ubyte)clamp(cast(int)(rgb.x * 255), 0, 255);

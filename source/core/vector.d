@@ -1,14 +1,17 @@
 import std.algorithm.iteration;
 import std.algorithm.mutation;
-import std.algorithm;
-import std.math;
+import std.algorithm.searching;
+//import std.math;
 import std.array;
 import std.range;
 import std.stdio;
 import std.encoding;
 
+pragma(LDC_intrinsic, "llvm.sqrt.f32")
+  @nogc pure float sqrt(float);
+
 void ctfe_valid(T, T value)() {
-    static assert(is(typeof(value)));
+    //static assert(is(typeof(value)));
 	//pragma(msg, value);
 }
 
@@ -24,7 +27,10 @@ struct Vec(int dim, T) {
     /// Scalar multiplication
     @nogc pure Self opBinary(string s)(const T scalar) const if (s == "*") {
         Self newVec;
-        copy(data[].zip(scalar.repeat).map!(a => a[0] * a[1]), newVec.data[]);
+        static foreach(i; 0 .. dim) {
+            newVec.data[i] = data[i] * scalar;
+        }
+        //copy(data[].zip(scalar.repeat).map!(a => a[0] * a[1]), newVec.data[]);
         return newVec;
     }
 
@@ -32,19 +38,34 @@ struct Vec(int dim, T) {
     /// Traditional operations extended to vectors
     @nogc pure Self opBinary(string s)(const Self rhs) const if (vectorOperators.canFind(s)) {
         Self newVec;
-        copy(zip(this.data[], rhs.data[]).map!(tuple => mixin("tuple[0]" ~ s ~ "tuple[1]")), newVec.data[]);
+        static foreach(i; 0 .. dim) {
+            {
+            T a = data[i];
+            T b = rhs.data[i];
+            newVec.data[i] = mixin("a" ~ s ~ "b");
+            }
+        }
+        //copy(zip(this.data[], rhs.data[]).map!(tuple => mixin("tuple[0]" ~ s ~ "tuple[1]")), newVec.data[]);
         return newVec;
     }
 
     /// Vector negation
     @nogc pure Self opUnary(string s)() const if (s == "-") {
         Self newVec;
-        copy(this.data[].map!(a => -a), newVec.data[]);
+        static foreach(i; 0 .. dim) {
+            newVec.data[i] = -data[i];
+        }
+        //copy(this.data[].map!(a => -a), newVec.data[]);
         return newVec;
     }
 
     @nogc pure T lengthSquared() const {
-        return data.fold!((acc, value) => acc + value * value)(cast(T)0);
+        T acc = T(0);
+        static foreach(i; 0 .. dim) {
+            acc += data[i] * data[i];
+        }
+        return acc;
+        //return data.fold!((acc, value) => acc + value * value)(cast(T)0);
     }
 
     @nogc pure T length()() const if(__traits(isFloating, T)) {
@@ -63,9 +84,9 @@ struct Vec(int dim, T) {
     private static immutable char[] shorthandsChar = ['x', 'y', 'z', 'w'];
 
     // Not non-gc but it doesn't matter since this is only ever called at compile time!
-    private pure static bool isSwizzleName(string s) {
-        foreach(e ; s) {
-            if(!shorthandsChar.canFind(e)) {
+    private pure static bool isSwizzleName(string s)() {
+        static foreach(e ; s) {
+            if(swizzleIndex(e) == -1) {
                 return false;
             }
         }
@@ -73,7 +94,7 @@ struct Vec(int dim, T) {
     }
 
     private pure static int swizzleIndex(char c) {
-        foreach(i, e ; shorthandsChar) {
+        static foreach(i, e ; shorthandsChar) {
             if(e == c) {
                 return cast(int)i;
             }
@@ -97,27 +118,30 @@ struct Vec(int dim, T) {
     }*/
 
     /// Const access over one named member
-    @nogc pure const auto opDispatch(string s)() if(isSwizzleName(s) && s.length == 1) {
+    pragma(inline, true)
+    @nogc pure const auto opDispatch(string s)() if(isSwizzleName!(s) && s.length == 1) {
         immutable int i = swizzleIndex(s[0]);
-        ctfe_valid!(int, i)();
+        //ctfe_valid!(int, i)();
         //ctfe_valid!(int, 0)();
         return data[i];
     }
 
     /// Compile time swizzling
-    @nogc pure const auto opDispatch(string s)() if(isSwizzleName(s) && s.length > 1) {
+    pragma(inline, true)
+    @nogc pure const auto opDispatch(string s)() if(isSwizzleName!(s) && s.length > 1) {
         Vec!(s.length, T) target;
-		foreach (int i; 0..s.length) {
+		static foreach (int i; 0..s.length) {
 			target.data[i] = data[swizzleIndex(s[i])];
         }
         return target;
     }
 
     /// Mutable access over one named member
-    @nogc pure ref auto opDispatch(string s)() if(isSwizzleName(s) && s.length == 1) {
+    pragma(inline, true)
+    @nogc pure ref auto opDispatch(string s)() if(isSwizzleName!(s) && s.length == 1) {
         if(s.length == 1) {
             immutable int i = swizzleIndex(s[0]);
-			ctfe_valid!(int, i)();
+			//ctfe_valid!(int, i)();
             return data[i];
         }
     }
@@ -133,10 +157,16 @@ struct Vec(int dim, T) {
 
 /// Dot product
 @nogc pure T dot(int dim, T)(const ref Vec!(dim, T) lhs, const ref Vec!(dim, T) rhs) {
-    return (lhs * rhs).data.fold!((T acc, T value) => acc + value);
+    T acc = T(0);
+    static foreach(i; 0 .. dim) {
+        acc += lhs.data[i] * rhs.data[i];
+    }
+    return acc;
+    //return (lhs * rhs).data.fold!((T acc, T value) => acc + value);
 }
 
 /// Cross product (3d specialized version)
+pragma(inline, true)
 @nogc pure Vec!(3, T) cross(T)(const ref Vec!(3, T) a, const ref Vec!(3, T) b) {
     Vec!(3, T) vec = [
                     a.y * b.z - a.z * b.y,

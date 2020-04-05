@@ -1,5 +1,3 @@
-import std.math;
-
 import vector;
 import ray;
 

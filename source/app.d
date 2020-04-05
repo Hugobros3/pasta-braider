@@ -21,7 +21,7 @@ int ctFactorial(int x)() {
 	return acc;
 }
 
-void main() {
+void main(string[] args) {
 	Vec3f vec = ( 0.0f );
 	Vec3f vec2 = [ 0.0f, 0.0f, 0.05f ];
 	vec.x = 1.0f;
