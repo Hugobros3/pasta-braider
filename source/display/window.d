@@ -2,6 +2,9 @@ import std.algorithm.mutation;
 import std.algorithm.comparison;
 import std.random;
 import std.stdio;
+import std.string;
+import std.conv;
+import core.time;
 
 import film;
 import color;
@@ -89,6 +92,8 @@ class Window : Film!(RGB) {
         SDL_Event event;
 
         while (!quit) {
+            MonoTime frameStart = MonoTime.currTime;
+
             clear();
 
             immutable @nogc auto render = function RGB(Window film, Vec2i pos) @nogc { 
@@ -102,7 +107,7 @@ class Window : Film!(RGB) {
 				return RGB([0.0f, 0.5f, 1.0f]);
             };
 
-            pragma(msg, typeof(render).stringof);
+            //pragma(msg, typeof(render).stringof);
             draw!(Window)(render);
 
             foreach(x ; 0 .. _size.x()) {
@@ -121,6 +126,13 @@ class Window : Film!(RGB) {
             SDL_RenderClear(renderer);
             SDL_RenderCopy(renderer, texture, null, null);
             SDL_RenderPresent(renderer);
+
+            MonoTime frameDone = MonoTime.currTime;
+            Duration frameDuration = frameDone - frameStart;
+            long msecs = frameDuration.total!"msecs"();
+            float fps = 1000.0 / cast(double)(msecs);
+            const string title = ("FPS: " ~ to!string(fps));
+            SDL_SetWindowTitle(window, toStringz(title) );
 
             while(SDL_PollEvent(&event)) {
                 switch (event.type) {
