@@ -10,11 +10,6 @@ import std.encoding;
 pragma(LDC_intrinsic, "llvm.sqrt.f32")
   @nogc pure float sqrt(float);
 
-void ctfe_valid(T, T value)() {
-    //static assert(is(typeof(value)));
-	//pragma(msg, value);
-}
-
 /// Fully generic vector types !
 struct Vec(int dim, T) {
     static assert(dim > 0, "What kind of vector is this even supposed to be");
@@ -25,6 +20,7 @@ struct Vec(int dim, T) {
     alias Self = Vec!(dim, T);
 
     /// Scalar multiplication
+    pragma(inline, true)
     @nogc pure Self opBinary(string s)(const T scalar) const if (s == "*") {
         Self newVec;
         static foreach(i; 0 .. dim) {
@@ -36,6 +32,7 @@ struct Vec(int dim, T) {
 
     private static immutable string[] vectorOperators = ["*", "/", "+", "-"];
     /// Traditional operations extended to vectors
+    pragma(inline, true)
     @nogc pure Self opBinary(string s)(const Self rhs) const if (vectorOperators.canFind(s)) {
         Self newVec;
         static foreach(i; 0 .. dim) {
@@ -50,6 +47,7 @@ struct Vec(int dim, T) {
     }
 
     /// Vector negation
+    pragma(inline, true)
     @nogc pure Self opUnary(string s)() const if (s == "-") {
         Self newVec;
         static foreach(i; 0 .. dim) {
@@ -59,6 +57,7 @@ struct Vec(int dim, T) {
         return newVec;
     }
 
+    pragma(inline, true)
     @nogc pure T lengthSquared() const {
         T acc = T(0);
         static foreach(i; 0 .. dim) {
@@ -68,14 +67,17 @@ struct Vec(int dim, T) {
         //return data.fold!((acc, value) => acc + value * value)(cast(T)0);
     }
 
+    pragma(inline, true)
     @nogc pure T length()() const if(__traits(isFloating, T)) {
         return sqrt(this.lengthSquared());
     }
 
+    pragma(inline, true)
     @nogc pure T distanceSquared(Self rhs) const {
         return (this - rhs).lengthSquared();
     }
 
+    pragma(inline, true)
     @nogc pure Self normalize()() const if(__traits(isFloating, T)) {
         T invLength = T(1.0) / this.length();
         return this * invLength;
@@ -121,8 +123,6 @@ struct Vec(int dim, T) {
     pragma(inline, true)
     @nogc pure const auto opDispatch(string s)() if(isSwizzleName!(s) && s.length == 1) {
         immutable int i = swizzleIndex(s[0]);
-        //ctfe_valid!(int, i)();
-        //ctfe_valid!(int, 0)();
         return data[i];
     }
 
@@ -141,7 +141,6 @@ struct Vec(int dim, T) {
     @nogc pure ref auto opDispatch(string s)() if(isSwizzleName!(s) && s.length == 1) {
         if(s.length == 1) {
             immutable int i = swizzleIndex(s[0]);
-			//ctfe_valid!(int, i)();
             return data[i];
         }
     }

@@ -69,22 +69,14 @@ class Window : Film!(RGB) {
 
             return RGB([0.5f, 1.0f, 0.0f]);
         };*/
-    }    
-    
-    @nogc void draw(T)(RGB function (T, Vec2i) @nogc  renderFn) {
-        foreach(x; 0 .. size.x) {
-            foreach(y; 0 .. size.y) {
-                add(Vec2i([x, y]), renderFn(this, Vec2i ([x, y]) ) );
-            }
-        }
     }
 
     void run() {
         SDL_Init(SDL_INIT_VIDEO);
         SDL_Window* window = SDL_CreateWindow("SDL2 Displaying Image", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, _size.x, _size.y, cast(SDL_WindowFlags)(0));
-        SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, cast(SDL_RendererFlags)(0));
+        SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE /*cast(SDL_RendererFlags)(0)*/);
 
-        SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, _size.x(), _size.y() );
+        SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, _size.x, _size.y );
 
         ubyte[] buf = new ubyte[_size.x * _size.y * 4];
 
@@ -96,7 +88,7 @@ class Window : Film!(RGB) {
 
             clear();
 
-            immutable @nogc auto render = function RGB(Window film, Vec2i pos) @nogc { 
+            immutable @nogc auto render = delegate RGB(Window film, Vec2i pos) @nogc { 
                 Ray ray = generateRay(film.camera, film.size(), pos);
 				Hit hit = film.scene.intersect(ray);
 				//return ray.direction;
@@ -108,7 +100,8 @@ class Window : Film!(RGB) {
             };
 
             //pragma(msg, typeof(render).stringof);
-            draw!(Window)(render);
+            //draw!(Window)(render);
+            draw!(render)(this);
 
             foreach(x ; 0 .. _size.x()) {
                 foreach(y ; 0 .. _size.y()) {
@@ -121,9 +114,10 @@ class Window : Film!(RGB) {
                     buf[((y * _size.x) + x) * 4 + 0] = 0x00;
                 }
             }
+
             SDL_UpdateTexture(texture, null, cast(const(void*))(buf.ptr), cast(int)(size.x() * uint.sizeof));
 
-            SDL_RenderClear(renderer);
+            //SDL_RenderClear(renderer);
             SDL_RenderCopy(renderer, texture, null, null);
             SDL_RenderPresent(renderer);
 
@@ -150,15 +144,25 @@ class Window : Film!(RGB) {
         SDL_Quit();
     }
 
-    override void clear() {
+    final override void clear() {
         _pixels[].fill(RGB(0.0f));
     }
 
-    override Vec2i size() {
+    pragma(inline, true)
+    final override Vec2i size() {
         return _size;
     }
 
-    override void add(Vec2i position, RGB contribution) {
+    pragma(inline, true)
+    final override void add(Vec2i position, RGB contribution) {
         _pixels[position.x * size.y + position.y] = _pixels[position.x * size.y + position.y] + contribution;
+    }
+}
+
+@nogc void draw(RGB delegate (Window, Vec2i) @nogc renderFn)(Window window) {
+    foreach(x; 0 .. window.size.x) {
+        foreach(y; 0 .. window.size.y) {
+            window.add(Vec2i([x, y]), renderFn(window, Vec2i ([x, y]) ) );
+        }
     }
 }

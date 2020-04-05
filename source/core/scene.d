@@ -5,7 +5,7 @@ class Scene(PrimitiveType)
 {
     PrimitiveType[] primitives;
 
-    @nogc Hit intersect(Ray ray) {
+    final @nogc Hit intersect(Ray ray) {
         float t;
         Hit hit;
         foreach(primId, primitive; primitives) {
