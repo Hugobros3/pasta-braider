@@ -47,7 +47,7 @@ struct Vec(int dim, T) {
         return newVec;
     }
 
-    private static immutable string[] vectorOperators = ["*", "/", "+", "-"];
+    private static immutable string[] vectorOperators = ["*", "/", "+", "-", "%"];
     /// Traditional operations extended to vectors
     pragma(inline, true)
     @nogc pure Self opBinary(string s)(const Self rhs) const if (vectorOperators.canFind(s)) {
@@ -198,7 +198,7 @@ struct Vec(int dim, T) {
 }
 
 /// Dot product
-@nogc pure T dot(int dim, T)(const ref Vec!(dim, T) lhs, const ref Vec!(dim, T) rhs) {
+@nogc pure T dot(int dim, T)(const Vec!(dim, T) lhs, const Vec!(dim, T) rhs) {
     T acc = T(0);
     static if(Vec!(dim, T).is_simd) {
         auto xd = lhs.data * rhs.data;

@@ -1,11 +1,13 @@
 import vector;
 import ray;
+import material;
 
 import performance;
 
 struct Sphere {
     Vec3f center;
     float radius;
+    Material* material;
 
     @nogc bool intersect(const ref Ray ray, ref float t) const {
         const auto oc = (ray.origin - center);//.normalize();
@@ -38,4 +40,8 @@ struct Sphere {
             return false;
         }
     }
+
+    @nogc Vec3f normal(const ref Vec3f p) const {
+        return (p - center) * (1.0 / radius);
+	}
 }

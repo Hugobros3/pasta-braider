@@ -4,7 +4,11 @@ import std.random;
 import std.stdio;
 import std.string;
 import std.conv;
+import std.range;
 import core.time;
+import std.parallelism;
+
+import performance;
 
 import film;
 import color;
@@ -13,19 +17,29 @@ import camera;
 import ray;
 import scene;
 import algo;
+import material;
 
 import sphere;
+import pt;
 
 import bindbc.sdl;
 
+Mt19937 rng;
+
 class Window : Film!(RGB) {
-    private Vec2i _size = [512, 512];
+    private Vec2i _size = [1024, 1024];
     private RGB[] _pixels;
 
     private Scene!Sphere scene = new Scene!Sphere();
     private Camera camera;
 
+	Material emmissiveMat = { color: [0.0, 0.0, 0.0], emission: 10.0f };
+	Material diffuseRedMat = { color: [1.0, 0.0, 0.0], emission: 0.0f };
+	Material diffuseGreyMat = { color: [0.8, 0.8, 0.8] };
+
     this() { 
+		//defaultPoolThreads(16);
+
         _pixels = new RGB[_size.x * _size.y];
         SDLSupport ret = loadSDL();
         if(ret != sdlSupport) {
@@ -44,7 +58,11 @@ class Window : Film!(RGB) {
         camera.position = Vec3f([0.0, 0.0, 0.0]);
         camera.lookingAt = Vec3f([1.0, 0.0, 0.0]);
 
-        scene.primitives ~= Sphere(Vec3f([10.0, 0.0, 0.0]), 1.5f);
+        scene.primitives ~= Sphere(Vec3f([10.0, 0.0, -100.0]), 98.5f, &diffuseGreyMat);
+
+        scene.primitives ~= Sphere(Vec3f([8.5, 0.0, 0.0]), 2.5f, &emmissiveMat);
+
+        scene.primitives ~= Sphere(Vec3f([10.0, 4.0, 0.0]), 1.5f, &diffuseRedMat);
 
         foreach(primId, primitive; scene.primitives) {
             writeln(primitive);
@@ -63,23 +81,26 @@ class Window : Film!(RGB) {
         bool quit = false;
         SDL_Event event;
 
+		clear();
+        int acc = 0;
         while (!quit) {
             MonoTime frameStart = MonoTime.currTime;
 
-            clear();
+            acc++;
             camera.update();
 
-            immutable @nogc auto algorithm = make_debug_renderer!(RGB, Sphere);
+            immutable @nogc auto algorithm = make_pt_renderer!(RGB, Sphere);
             draw!(algorithm)(this);
 
+            float invAcc = 1.0f / acc;
             foreach(x ; 0 .. _size.x()) {
                 foreach(y ; 0 .. _size.y()) {
                     //ubyte luminance = cast(ubyte)uniform(0, 255);
                     auto rgb = _pixels[((y * _size.x) + x)];
 
-                    buf[((y * _size.x) + x) * 4 + 3] = cast(ubyte)clamp(cast(int)(rgb.x * 255), 0, 255);
-                    buf[((y * _size.x) + x) * 4 + 2] = cast(ubyte)clamp(cast(int)(rgb.y * 255), 0, 255);
-                    buf[((y * _size.x) + x) * 4 + 1] = cast(ubyte)clamp(cast(int)(rgb.z * 255), 0, 255);
+                    buf[((y * _size.x) + x) * 4 + 3] = cast(ubyte)clamp(cast(int)(sqrt(rgb.x * invAcc) * 255), 0, 255);
+                    buf[((y * _size.x) + x) * 4 + 2] = cast(ubyte)clamp(cast(int)(sqrt(rgb.y * invAcc) * 255), 0, 255);
+                    buf[((y * _size.x) + x) * 4 + 1] = cast(ubyte)clamp(cast(int)(sqrt(rgb.z * invAcc) * 255), 0, 255);
                     buf[((y * _size.x) + x) * 4 + 0] = 0x00;
                 }
             }
@@ -128,11 +149,14 @@ class Window : Film!(RGB) {
     }
 }
 
-@nogc void draw(immutable(RGB function(immutable ref Camera, const Vec2i, Vec2i, const ref Scene!(Sphere)) @nogc) renderer)(Window window) {
+void draw(immutable(RGB function(immutable ref Camera, const Vec2i, Vec2i, const ref Scene!(Sphere)) @nogc) renderer)(Window window) {
     Vec2i viewportSize = window.size();
     immutable Camera imRef = window.camera;
-    foreach(x; 0 .. window.size.x) {
-        foreach(y; 0 .. window.size.y) {
+	auto xr = iota(0, window.size.x);
+    foreach(x; parallel(xr, 16)) {
+		rng.seed(unpredictableSeed);
+        auto yr = iota(0, window.size.y);
+        foreach(y; yr) {
             window.add(Vec2i([x, y]), renderer(imRef, viewportSize, Vec2i ([x, y]), window.scene) );
         }
     }
