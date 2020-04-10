@@ -12,15 +12,11 @@ import vector;
 import camera;
 import ray;
 import scene;
+import algo;
 
 import sphere;
 
 import bindbc.sdl;
-
-@nogc RGB render2(Window film, Vec2i pos) { 
-    //Ray ray = generateRay(film.camera, film.size(), pos);
-    return RGB([0.5f, 1.0f, 0.0f]);
-}
 
 class Window : Film!(RGB) {
     private Vec2i _size = [512, 512];
@@ -28,8 +24,6 @@ class Window : Film!(RGB) {
 
     private Scene!Sphere scene = new Scene!Sphere();
     private Camera camera;
-
-    //immutable RGB delegate(Window, Vec2i) drawCmd;
 
     this() { 
         _pixels = new RGB[_size.x * _size.y];
@@ -47,10 +41,6 @@ class Window : Film!(RGB) {
             }
         }
 
-        /*camera = Camera {
-            position: Vec3f([0.0, 0.0, 0.0]),
-            lookingAt: Vec3f([1.0, 0.0, 0.0])
-        };*/
         camera.position = Vec3f([0.0, 0.0, 0.0]);
         camera.lookingAt = Vec3f([1.0, 0.0, 0.0]);
 
@@ -59,16 +49,6 @@ class Window : Film!(RGB) {
         foreach(primId, primitive; scene.primitives) {
             writeln(primitive);
 		}
-
-        /*drawCmd = delegate RGB(Window film, Vec2i pos) { 
-            Ray ray = generateRay(film.camera, film.size(), pos);
-            Hit hit = scene.intersect(ray);
-            if(hit.primId != -1) {
-				return RGB([1.0f, 0.0f, 0.0f]);
-			}
-
-            return RGB([0.5f, 1.0f, 0.0f]);
-        };*/
     }
 
     void run() {
@@ -87,21 +67,10 @@ class Window : Film!(RGB) {
             MonoTime frameStart = MonoTime.currTime;
 
             clear();
+            camera.update();
 
-            immutable @nogc auto render = delegate RGB(Window film, Vec2i pos) @nogc { 
-                Ray ray = generateRay(film.camera, film.size(), pos);
-				Hit hit = film.scene.intersect(ray);
-				//return ray.direction;
-				if(hit.primId != -1) {
-					return RGB([1.0f, 0.0f, 0.0f]);
-				}
-
-				return RGB([0.0f, 0.5f, 1.0f]);
-            };
-
-            //pragma(msg, typeof(render).stringof);
-            //draw!(Window)(render);
-            draw!(render)(this);
+            immutable @nogc auto algorithm = make_debug_renderer!(RGB, Sphere);
+            draw!(algorithm)(this);
 
             foreach(x ; 0 .. _size.x()) {
                 foreach(y ; 0 .. _size.y()) {
@@ -159,10 +128,12 @@ class Window : Film!(RGB) {
     }
 }
 
-@nogc void draw(RGB delegate (Window, Vec2i) @nogc renderFn)(Window window) {
+@nogc void draw(immutable(RGB function(immutable ref Camera, const Vec2i, Vec2i, const ref Scene!(Sphere)) @nogc) renderer)(Window window) {
+    Vec2i viewportSize = window.size();
+    immutable Camera imRef = window.camera;
     foreach(x; 0 .. window.size.x) {
         foreach(y; 0 .. window.size.y) {
-            window.add(Vec2i([x, y]), renderFn(window, Vec2i ([x, y]) ) );
+            window.add(Vec2i([x, y]), renderer(imRef, viewportSize, Vec2i ([x, y]), window.scene) );
         }
     }
 }
