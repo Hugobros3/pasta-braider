@@ -20,7 +20,7 @@ struct Vec(int dim, T) {
     static assert(dim > 0, "What kind of vector is this even supposed to be");
 
     /// Actual data container
-    static if(false && dim >= 2 && dim <= 4 && is(T == float)) {
+    static if(true && dim >= 2 && dim <= 4 && is(T == float)) {
         //float[4] data;
         float4 data;
         static immutable bool is_simd = true;

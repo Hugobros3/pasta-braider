@@ -33,7 +33,10 @@ class Window : Film!(RGB) {
     private Scene!Sphere scene = new Scene!Sphere();
     private Camera camera;
 
-	Material emmissiveMat = { color: [0.0, 0.0, 0.0], emission: 10.0f };
+	Material emmissiveMat = { color: [1.0, 0.5, 0.0], emission: 10.0f };
+	Material veryEmmissiveMat = { color: [1.0, 0.0, 1.0], emission: 2.0f };
+	Material veryEmmissiveMat2 = { color: [0.0, 1.0, 0.0], emission: 2.0f };
+
 	Material diffuseRedMat = { color: [1.0, 0.0, 0.0], emission: 0.0f };
 	Material diffuseGreyMat = { color: [0.8, 0.8, 0.8] };
 
@@ -60,9 +63,15 @@ class Window : Film!(RGB) {
 
         scene.primitives ~= Sphere(Vec3f([10.0, 0.0, -100.0]), 98.5f, &diffuseGreyMat);
 
-        scene.primitives ~= Sphere(Vec3f([8.5, 0.0, 0.0]), 2.5f, &emmissiveMat);
+        scene.primitives ~= Sphere(Vec3f([12.0, -5.0, 10.0]), 1.5f, &emmissiveMat);
+
+        scene.primitives ~= Sphere(Vec3f([8.5, 0.0, 0.0]), 0.5f, &veryEmmissiveMat);
+
+        scene.primitives ~= Sphere(Vec3f([6.5, 3.0, -1.0]), 0.5f, &veryEmmissiveMat2);
 
         scene.primitives ~= Sphere(Vec3f([10.0, 4.0, 0.0]), 1.5f, &diffuseRedMat);
+        scene.primitives ~= Sphere(Vec3f([12.0, 0.0, 0.0]), 2.5f, &diffuseGreyMat);
+        scene.primitives ~= Sphere(Vec3f([10.0, -5.0, 0.0]), 3.5f, &diffuseRedMat);
 
         foreach(primId, primitive; scene.primitives) {
             writeln(primitive);
@@ -86,6 +95,9 @@ class Window : Film!(RGB) {
         while (!quit) {
             MonoTime frameStart = MonoTime.currTime;
 
+            //clear();
+            //acc = 0;
+
             acc++;
             camera.update();
 
@@ -93,7 +105,9 @@ class Window : Film!(RGB) {
             draw!(algorithm)(this);
 
             float invAcc = 1.0f / acc;
-            foreach(x ; 0 .. _size.x()) {
+        	
+            auto xr = iota(0, size.x);
+            foreach(x ; parallel(xr)) {
                 foreach(y ; 0 .. _size.y()) {
                     //ubyte luminance = cast(ubyte)uniform(0, 255);
                     auto rgb = _pixels[((y * _size.x) + x)];

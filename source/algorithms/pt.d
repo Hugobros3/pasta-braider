@@ -49,11 +49,17 @@ import std.math : abs;
 	return ((b1 * cos(phi) + b2 * sin(phi)) * cosTheta + n * sinTheta).normalize();
 }
 
+@nogc float uniform_rng() {
+	float val = (float(rng.front) * (1.0f / ((uint.max))));
+	rng.popFront();
+	return val;
+}
+
 auto make_pt_renderer(ColorSpace, PrimitiveType)() {
 	return function RGB(immutable ref Camera camera, const Vec2i viewportSize, Vec2i pos, const ref Scene!(PrimitiveType) scene) @nogc { 
 		Vec3f color = [ 0.0, 0.0, 0.0 ];
 
-		Ray ray = generateRay(camera, viewportSize, pos);
+		Ray ray = generateRay(camera, viewportSize, Vec2f([pos.x + uniform_rng(), pos.y + uniform_rng()]));
 
 		int depth = 0;
 		Vec3f cost = 1.0;
@@ -69,36 +75,23 @@ auto make_pt_renderer(ColorSpace, PrimitiveType)() {
 				Vec3f hitNormal = scene.primitives[hit.primId].normal(hitPoint);
 				const Material* mat = scene.primitives[hit.primId].material;
 
-				color = color + Vec3f(mat.emission) * cost;
+				color = color + Vec3f(mat.emission) * mat.color * cost;
 
 				if(mat.type == 0) {
-					float rn1 = (float(rng.front) * (1.0f / ((uint.max))));
-					rng.popFront();
-					float rn2 = float(rng.front) * (1.0f / ((uint.max)));
-					rng.popFront();
+					Vec3f rotatedDir = mapRectToCosineHemisphere(hitNormal, Vec2f([uniform_rng(), uniform_rng()]));
 
-					// TODO why is this not working ?
-					/*Vec3f rotX, rotY;
-					ons(hitNormal, rotX, rotY);
-
-					Vec3f sampled = hemisphere( Vec2f([rn1, rn2]) );
-
-					Vec3f rotatedDir;
-					rotatedDir.x = (Vec3f([rotX.x, rotY.x, hitNormal.x]).dot(sampled));
-					rotatedDir.y = (Vec3f([rotX.y, rotY.y, hitNormal.y]).dot(sampled));
-					rotatedDir.z = (Vec3f([rotX.z, rotY.z, hitNormal.z]).dot(sampled));*/
-					Vec3f rotatedDir = mapRectToCosineHemisphere(hitNormal, Vec2f([rn1, rn2]));
-
-					Ray bounceRay = { hitPoint + rotatedDir * 0.0, rotatedDir};
+					Ray bounceRay = { hitPoint + rotatedDir * 0.01, rotatedDir};
 					ray = bounceRay;
 
-					import std.algorithm;
 					cost = cost * mat.color * dot(ray.direction, hitNormal);
 				}
 			} else {
-				color = color + Vec3f([0.0f, 0.5f, 1.0f]) * cost;
+				// "sky" color
+				color = color + Vec3f([0.0f, 0.005f, 0.015f]) * cost;
 				break;
 			}
+
+			depth++;
 		}
 
 		return color;

@@ -15,7 +15,7 @@ struct Camera {
 	}
 }
 
-@nogc Ray generateRay(immutable ref Camera camera, const Vec2i viewportSize, const Vec2i viewportPosition) {
+@nogc Ray generateRay(immutable ref Camera camera, const Vec2i viewportSize, const Vec2f viewportPosition) {
     float aspectRation = cast(float)viewportSize.x / cast(float)viewportSize.y;
 
     Vec2f ndc = Vec2f([viewportPosition.x, viewportPosition.y]) / Vec2f([viewportSize.x - 1, viewportSize.y - 1]);
