@@ -1,9 +1,13 @@
 import ray;
 
+import rng;
+import light;
+
 class Scene(PrimitiveType) 
     if(__traits(compiles, PrimitiveType.intersect))
 {
     PrimitiveType[] primitives;
+    Light[] lights;
 
     final @nogc Hit intersect(Ray ray) const {
         float t;
@@ -18,6 +22,22 @@ class Scene(PrimitiveType)
 			}
 		}
         return hit;
+	}
+
+    void addEmmissivePrimitives() {
+        foreach(primId, primitive; primitives) {
+            if(primitive.material.emission > 0.0) {
+                Light light = {
+                    type: LightType.EMMISSIVE_PRIMITIVE,
+                    primitive: EmmissivePrimitive(cast(int)primId)
+				};
+                lights ~= light;
+			}
+		}
+	}
+
+    final @nogc Light pickRandomLight() const {
+        return lights[uniform_range(0, cast(int)lights.length)];
 	}
 }
 

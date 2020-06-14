@@ -9,6 +9,7 @@ import core.time;
 import std.parallelism;
 
 import performance;
+import rng;
 
 import film;
 import color;
@@ -18,13 +19,12 @@ import ray;
 import scene;
 import algo;
 import material;
+import light;
 
 import sphere;
 import pt;
 
 import bindbc.sdl;
-
-Mt19937 rng;
 
 class Window : Film!(RGB) {
     private Vec2i _size = [1024, 1024];
@@ -34,11 +34,13 @@ class Window : Film!(RGB) {
     private Camera camera;
 
 	Material emmissiveMat = { color: [1.0, 0.5, 0.0], emission: 10.0f };
-	Material veryEmmissiveMat = { color: [1.0, 0.0, 1.0], emission: 2.0f };
-	Material veryEmmissiveMat2 = { color: [0.0, 1.0, 0.0], emission: 2.0f };
+	Material veryEmmissiveMat = { color: [1.0, 0.0, 1.0], emission: 20.0f };
+	Material veryEmmissiveMat2 = { color: [0.0, 1.0, 0.0], emission: 20.0f };
 
 	Material diffuseRedMat = { color: [1.0, 0.0, 0.0], emission: 0.0f };
 	Material diffuseGreyMat = { color: [0.8, 0.8, 0.8] };
+
+	Material skyMaterial = { color: [0.0f, 0.005f, 0.015f], emission: 10.0f };
 
     this() { 
 		//defaultPoolThreads(16);
@@ -65,13 +67,32 @@ class Window : Film!(RGB) {
 
         scene.primitives ~= Sphere(Vec3f([12.0, -5.0, 10.0]), 1.5f, &emmissiveMat);
 
-        scene.primitives ~= Sphere(Vec3f([8.5, 0.0, 0.0]), 0.5f, &veryEmmissiveMat);
-
-        scene.primitives ~= Sphere(Vec3f([6.5, 3.0, -1.0]), 0.5f, &veryEmmissiveMat2);
+        //scene.primitives ~= Sphere(Vec3f([8.5, 0.0, 0.0]), 0.5f, &veryEmmissiveMat);
+        //scene.primitives ~= Sphere(Vec3f([6.5, 3.0, -1.0]), 0.5f, &veryEmmissiveMat2);
 
         scene.primitives ~= Sphere(Vec3f([10.0, 4.0, 0.0]), 1.5f, &diffuseRedMat);
         scene.primitives ~= Sphere(Vec3f([12.0, 0.0, 0.0]), 2.5f, &diffuseGreyMat);
         scene.primitives ~= Sphere(Vec3f([10.0, -5.0, 0.0]), 3.5f, &diffuseRedMat);
+
+        scene.addEmmissivePrimitives();
+
+        Light skyLight = {
+		    type: LightType.SKY,
+		    sky: SkyLight(skyMaterial)
+		};
+        scene.lights ~= skyLight;
+
+
+        Light pointLight = {
+		    type: LightType.POINT,
+		    point: PointLight(veryEmmissiveMat2, Vec3f([8.5, 0.0, 0.0]))
+		    };
+		scene.lights ~= pointLight;
+        Light pointLight2 = {
+		    type: LightType.POINT,
+		    point: PointLight(veryEmmissiveMat, Vec3f([6.5, 3.0, -1.0]))
+		    };
+		scene.lights ~= pointLight2;
 
         foreach(primId, primitive; scene.primitives) {
             writeln(primitive);
@@ -167,11 +188,17 @@ void draw(immutable(RGB function(immutable ref Camera, const Vec2i, Vec2i, const
     Vec2i viewportSize = window.size();
     immutable Camera imRef = window.camera;
 	auto xr = iota(0, window.size.x);
-    foreach(x; parallel(xr, 16)) {
-		rng.seed(unpredictableSeed);
+    foreach(x; parallel(xr, 1)) {
+    //foreach(x; xr) {
+		seedRng();
         auto yr = iota(0, window.size.y);
         foreach(y; yr) {
-            window.add(Vec2i([x, y]), renderer(imRef, viewportSize, Vec2i ([x, y]), window.scene) );
-        }
+            immutable auto spp = 1;
+            RGB samples = 0.0;
+            foreach(sample; 0 .. spp) {
+                samples = samples + renderer(imRef, viewportSize, Vec2i ([x, y]), window.scene) * (1.0 / spp);
+			}
+            window.add(Vec2i([x, y]), samples );
+        }   
     }
 }
