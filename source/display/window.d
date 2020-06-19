@@ -34,8 +34,8 @@ class Window : Film!(RGB) {
     private Camera camera;
 
 	Material emmissiveMat = { color: [1.0, 0.5, 0.0], emission: 10.0f };
-	Material veryEmmissiveMat = { color: [1.0, 0.0, 1.0], emission: 20.0f };
-	Material veryEmmissiveMat2 = { color: [0.0, 1.0, 0.0], emission: 20.0f };
+	Material veryEmmissiveMat = { color: [1.0, 0.0, 1.0], emission: 2.0f };
+	Material veryEmmissiveMat2 = { color: [0.0, 1.0, 0.0], emission: 2.0f };
 
 	Material diffuseRedMat = { color: [1.0, 0.0, 0.0], emission: 0.0f };
 	Material diffuseGreyMat = { color: [0.8, 0.8, 0.8] };
@@ -67,8 +67,8 @@ class Window : Film!(RGB) {
 
         scene.primitives ~= Sphere(Vec3f([12.0, -5.0, 10.0]), 1.5f, &emmissiveMat);
 
-        //scene.primitives ~= Sphere(Vec3f([8.5, 0.0, 0.0]), 0.5f, &veryEmmissiveMat);
-        //scene.primitives ~= Sphere(Vec3f([6.5, 3.0, -1.0]), 0.5f, &veryEmmissiveMat2);
+        scene.primitives ~= Sphere(Vec3f([8.5, 0.0, 0.0]), 0.5f, &veryEmmissiveMat);
+        scene.primitives ~= Sphere(Vec3f([6.5, 3.0, -1.0]), 0.5f, &veryEmmissiveMat2);
 
         scene.primitives ~= Sphere(Vec3f([10.0, 4.0, 0.0]), 1.5f, &diffuseRedMat);
         scene.primitives ~= Sphere(Vec3f([12.0, 0.0, 0.0]), 2.5f, &diffuseGreyMat);
@@ -80,10 +80,10 @@ class Window : Film!(RGB) {
 		    type: LightType.SKY,
 		    sky: SkyLight(skyMaterial)
 		};
-        scene.lights ~= skyLight;
+        //scene.lights ~= skyLight;
 
 
-        Light pointLight = {
+        /*Light pointLight = {
 		    type: LightType.POINT,
 		    point: PointLight(veryEmmissiveMat2, Vec3f([8.5, 0.0, 0.0]))
 		    };
@@ -92,7 +92,7 @@ class Window : Film!(RGB) {
 		    type: LightType.POINT,
 		    point: PointLight(veryEmmissiveMat, Vec3f([6.5, 3.0, -1.0]))
 		    };
-		scene.lights ~= pointLight2;
+		scene.lights ~= pointLight2;*/
 
         foreach(primId, primitive; scene.primitives) {
             writeln(primitive);
