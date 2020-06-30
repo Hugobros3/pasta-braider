@@ -35,14 +35,13 @@ class Window : Film!(RGB) {
     private Scene!Sphere scene = new Scene!Sphere();
     private Camera camera;
 
-	Material emmissiveMat = { color: [1.0, 0.5, 0.0], emission: 10.0f };
-	Material veryEmmissiveMat = { color: [1.0, 0.0, 1.0], emission: 2.0f };
-	Material veryEmmissiveMat2 = { color: [0.0, 1.0, 0.0], emission: 2.0f };
+	Material emmissiveMat =      make_diffuse_material!( Vec3f([1.0, 0.5, 0.0]), 10.0f );
+	Material veryEmmissiveMat =  make_diffuse_material!( Vec3f([1.0, 0.0, 1.0]), 2.0f );
+	Material veryEmmissiveMat2 = make_diffuse_material!( Vec3f([0.0, 1.0, 0.0]), 2.0f );
 
-	Material diffuseRedMat = { color: [1.0, 0.0, 0.0], emission: 0.0f };
-	Material diffuseGreyMat = { color: [0.8, 0.8, 0.8] };
-
-	Material skyMaterial = { color: [0.0f, 0.005f, 0.015f], emission: 10.0f };
+	Material diffuseRedMat =     make_diffuse_material!( Vec3f([1.0, 0.0, 0.0]), 0.0f );
+	Material diffuseGreyMat =    make_diffuse_material!( Vec3f([0.8, 0.8, 0.8]), 0.0f );
+	Material skyMaterial =       make_diffuse_material!( Vec3f([0.0f, 0.005f, 0.015f]), 0.0f );
 
     this() { 
 		//defaultPoolThreads(16);
