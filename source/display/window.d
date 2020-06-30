@@ -22,7 +22,9 @@ import material;
 import light;
 
 import sphere;
-import pt;
+
+//import pt;
+import direct_lighting;
 
 import bindbc.sdl;
 
@@ -122,7 +124,7 @@ class Window : Film!(RGB) {
             acc++;
             camera.update();
 
-            immutable @nogc auto algorithm = make_pt_renderer!(RGB, Sphere);
+            immutable @nogc auto algorithm = make_direct_lighting_renderer!(RGB, Sphere);
             draw!(algorithm)(this);
 
             float invAcc = 1.0f / acc;
