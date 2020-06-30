@@ -124,6 +124,7 @@ class Window : Film!(RGB) {
             camera.update();
 
             immutable @nogc auto algorithm = make_direct_lighting_renderer!(RGB, Sphere);
+            //immutable @nogc auto algorithm = make_direct_lighting_renderer_explicit_light_sampling!(RGB, Sphere);
             draw!(algorithm)(this);
 
             float invAcc = 1.0f / acc;

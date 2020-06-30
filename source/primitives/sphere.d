@@ -1,7 +1,7 @@
 import vector;
 import ray;
 import material;
-import sampling;
+import sphere_sampling_helper;
 
 import performance;
 import rng;
