@@ -22,7 +22,7 @@ import light;
 
 import sphere;
 
-//import pt;
+import path_tracing_renderer;
 import debug_renderer;
 import direct_lighting_renderer;
 
@@ -85,9 +85,10 @@ class Window : Film!(RGB) {
             acc++;
             camera.update();
 
-            immutable @nogc auto algorithm = make_direct_lighting_renderer!(RGB, Sphere);
-            //immutable @nogc auto algorithm = make_direct_lighting_renderer_explicit_light_sampling!(RGB, Sphere);
             //immutable @nogc auto algorithm = make_debug_renderer!(RGB, Sphere);
+            //immutable @nogc auto algorithm = make_direct_lighting_renderer!(RGB, Sphere);
+            //immutable @nogc auto algorithm = make_direct_lighting_renderer_explicit_light_sampling!(RGB, Sphere);
+            immutable @nogc auto algorithm = make_path_tracing_renderer!(RGB, Sphere);
             draw!(algorithm)(this);
 
             float invAcc = 1.0f / acc;

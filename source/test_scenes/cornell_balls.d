@@ -13,6 +13,8 @@ private	immutable {
 	Material diffuseGreenMat =   make_diffuse_material!( Vec3f([0.0, 1.0, 0.0]), 0.0f );
 
 	Material skyMaterial =       make_diffuse_material!( Vec3f([0.0f, 0.005f, 0.015f]), 0.0f ); 
+
+	Material mirrorMat =         make_mirror_material!( Vec3f([1.0, 1.0, 1.0]));
 }
 
 Scene!Sphere make_cornel_balls_scene() {
@@ -30,6 +32,9 @@ Scene!Sphere make_cornel_balls_scene() {
 
 	// object
 	scene.primitives ~= Sphere(Vec3f([12.0, 3.0, 0.0]), 2.5f, &diffuseGreyMat);
+
+	// mirror ball
+	scene.primitives ~= Sphere(Vec3f([8.0, 4.0, -5.0]), 2.0f, &mirrorMat);
 
 	scene.addEmmissivePrimitives();
 

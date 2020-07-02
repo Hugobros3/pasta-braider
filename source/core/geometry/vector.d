@@ -225,6 +225,10 @@ pragma(inline, true)
     return v;
 }
 
+@nogc pure Vec3f reflect(int dim, T)(const Vec!(dim, T) v, const Vec!(dim, T) n) {
+    return n * (dot(n, v) * 2.0f) - v;
+}
+
 alias Vec2f = Vec!(2, float);
 alias Vec3f = Vec!(3, float);
 alias Vec4f = Vec!(4, float);
