@@ -10,7 +10,6 @@ import std.parallelism;
 
 import fast_math;
 import uniform_sampling;
-
 import film;
 import color;
 import vector;
@@ -19,12 +18,13 @@ import ray;
 import scene;
 import material;
 import light;
-
-import sphere;
+import camera_controller;
 
 import path_tracing_renderer;
 import debug_renderer;
 import direct_lighting_renderer;
+
+import sphere;
 
 import balls;
 import cornell_balls;
@@ -37,6 +37,7 @@ class Window : Film!(RGB) {
 
     private Scene!Sphere scene;
     private Camera camera;
+    private CameraController controller;
 
     this() { 
 		//defaultPoolThreads(16);
@@ -79,10 +80,13 @@ class Window : Film!(RGB) {
         while (!quit) {
             MonoTime frameStart = MonoTime.currTime;
 
-            //clear();
-            //acc = 0;
-
+            if(controller.update()) {
+				clear();
+				acc = 0;
+			} 
             acc++;
+            camera.position = controller.position;
+			camera.lookingAt = controller.get_view_dir().normalize();
             camera.update();
 
             //immutable @nogc auto algorithm = make_debug_renderer!(RGB, Sphere);
@@ -157,7 +161,7 @@ void draw(immutable(RGB function(immutable ref Camera, const Vec2i, Vec2i, const
 		seedRng();
         auto yr = iota(0, window.size.y);
         foreach(y; yr) {
-            immutable auto spp = 4;
+            immutable auto spp = 1;
             RGB samples = 0.0;
             foreach(sample; 0 .. spp) {
                 samples = samples + renderer(imRef, viewportSize, Vec2i ([x, y]), window.scene) * (1.0 / spp);

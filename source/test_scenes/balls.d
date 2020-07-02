@@ -20,16 +20,16 @@ private	immutable {
 Scene!Sphere make_balls_scene() {
 	auto scene = new Scene!Sphere();
 
-	scene.primitives ~= Sphere(Vec3f([10.0, 0.0, -100.0]), 98.5f, &diffuseGreyMat);
+	scene.primitives ~= Sphere(Vec3f([10.0, -100.0, 0.0]), 98.5f, &diffuseGreyMat);
 
-	scene.primitives ~= Sphere(Vec3f([12.0, -5.0, 10.0]), 1.5f, &emmissiveMat);
+	scene.primitives ~= Sphere(Vec3f([12.0, 10.0, -5.0]), 1.5f, &emmissiveMat);
 
 	scene.primitives ~= Sphere(Vec3f([8.5, 0.0, 0.0]), 0.5f, &veryEmmissiveMat);
-	scene.primitives ~= Sphere(Vec3f([6.5, 3.0, -1.0]), 0.5f, &veryEmmissiveMat2);
+	scene.primitives ~= Sphere(Vec3f([6.5, -1.0, 3.0]), 0.5f, &veryEmmissiveMat2);
 
-	scene.primitives ~= Sphere(Vec3f([10.0, 4.0, 0.0]), 1.5f, &mirrorMat);
+	scene.primitives ~= Sphere(Vec3f([10.0, 0.0, 4.0]), 1.5f, &mirrorMat);
 	scene.primitives ~= Sphere(Vec3f([12.0, 0.0, 0.0]), 2.5f, &diffuseGreyMat);
-	scene.primitives ~= Sphere(Vec3f([10.0, -5.0, 0.0]), 3.5f, &diffuseRedMat);
+	scene.primitives ~= Sphere(Vec3f([10.0, 0.0, -5.0]), 3.5f, &diffuseRedMat);
 
 	Light skyLight = {
 		type: LightType.SKY,

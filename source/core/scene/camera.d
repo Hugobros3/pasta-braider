@@ -10,8 +10,8 @@ struct Camera {
 
     Vec3f h, v;
     void update() {
-		h = (cross(up, lookingAt));
-		v = (cross(h, lookingAt));
+		v = (cross(up, lookingAt));
+		h = (cross(v, lookingAt));
 	}
 }
 
