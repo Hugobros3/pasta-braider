@@ -4,12 +4,16 @@ Ray-tracing framework written in D as a learning project (both for D and for wri
 
 ## Features
 
- * Somewhat optimised, heavily templated vector maths (makes use of SIMD intrinsics and results reasonnable assembly)
+ * Somewhat optimised, heavily templated vector maths (makes use of SIMD intrinsics and results in reasonnable assembly)
  * Absolutely no GC happens during traversal (guaranteed by tagging all the RT functions `@nogc`)
  * Reasonnably fast (half the point of this exercise is finding out if D can be competitive in high performance stuff)
  * Can intersect spheres, no AS support yet
- * Basic almost-unbiased(tm) path tracing
-    * only diffuse materials for now
+ * Debug renderer
+ * Direct lighting renderer
+ * Basic correct (if very naïve) path tracing renderer
+    * only diffuse and mirror materials for now
+    * BSDF model for materials
+    * Both hemisphere sampling & next event estimation are available
 
 ## Compiling
 
