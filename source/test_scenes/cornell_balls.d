@@ -17,7 +17,7 @@ private	immutable {
 	Material mirrorMat =         make_mirror_material!( Vec3f([1.0, 1.0, 1.0]));
 }
 
-Scene!Sphere make_cornel_balls_scene() {
+Scene!Sphere make_cornell_balls_scene() {
 	auto scene = new Scene!Sphere();
 
 	// walls
@@ -36,13 +36,13 @@ Scene!Sphere make_cornel_balls_scene() {
 	// mirror ball
 	scene.primitives ~= Sphere(Vec3f([8.0, 4.0, -5.0]), 2.0f, &mirrorMat);
 
-	scene.addEmmissivePrimitives();
-
 	Light skyLight = {
 		type: LightType.SKY,
 		sky: SkyLight(skyMaterial)
 	};
 	//scene.lights ~= skyLight;
+
+	scene.preProcessLights();
 
 	return scene;
 }

@@ -2,12 +2,16 @@ import ray;
 
 import uniform_sampling;
 import light;
+import material;
+import vector;
 
 class Scene(PrimitiveType) 
     if(__traits(compiles, PrimitiveType.intersect))
 {
     PrimitiveType[] primitives;
     Light[] lights;
+
+    SkyLight skyLight = { make_diffuse_material!(Vec3f(0.0f), 0.0f) };
 
     final @nogc Hit intersect(Ray ray) const {
         float t;
@@ -24,7 +28,12 @@ class Scene(PrimitiveType)
         return hit;
 	}
 
-    void addEmmissivePrimitives() {
+    void preProcessLights() {
+        addEmmissivePrimitives();
+        findSkyLight();
+	}
+
+    private void addEmmissivePrimitives() {
         foreach(primId, primitive; primitives) {
             if(primitive.material.emission > 0.0) {
                 Light light = {
@@ -32,6 +41,14 @@ class Scene(PrimitiveType)
                     primitive: EmmissivePrimitive(cast(int)primId)
 				};
                 lights ~= light;
+			}
+		}
+	}
+
+    private void findSkyLight() {
+        foreach(light; lights) {
+            if(light.type == LightType.SKY) {
+                skyLight = light.sky;
 			}
 		}
 	}

@@ -53,13 +53,16 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
 					final switch(light.type) {
 						case LightType.SKY:
 							// Sampling the sky is done by picking a random direction, as the sky encloses the entire scene
-							/*Vec3f dirToSky = sampleSphere(Vec2f([uniform_rng(), uniform_rng()]));
-							Ray tryEscape = { hitPoint + dirToSky * 0.01, dirToSky};
+							Vec3f dirToSky = sample_random_direction_uniform(Vec2f([uniform_rng(), uniform_rng()]));
+							float pdf_dir = UNIFORM_SAMPLED_SPHERE_PDF;
 
-							Hit lightConnection = scene.intersect(tryEscape);
+							Ray rayToSky = { hitPoint + dirToSky * 0.01, dirToSky};
+
+							Hit lightConnection = scene.intersect(rayToSky);
 							if(lightConnection.primId == -1) {
-								color = color + light.sky.material.color * light.sky.material.emission * mat.color * dot(hitNormal, dirToSky) * weight * scene.lights.length;
-							}*/
+								Vec3f explicitRadianceContrib = light.sky.material.color * light.sky.material.emission * mat.bsdf.evaluate(ray.direction, hitNormal, rayToSky.direction) * (dot(hitNormal, dirToSky) / (pdf_dir * pdf_light_source));
+								color = color + explicitRadianceContrib * weight;
+							}
 							break;
 						case LightType.EMMISSIVE_PRIMITIVE: 
 
@@ -92,15 +95,12 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
 
 								Vec3f explicitRadianceContrib = (lightMat.color * lightMat.emission) * mat.bsdf.evaluate(ray.direction, hitNormal, rayToLight.direction) * cos_e * cos_l * inv_d2 * (mis / pdf_point_on_light);
 
-								//float solidAngle = max(0.0, dot(lightSampleNorm, dirToLight)) * (area / (distanceToLight * distanceToLight));
-								//const Material* lightMat = scene.primitives[light.primitive.index].material;
-								//Vec3f explicitRadianceContrib = lightMat.color * lightMat.emission * solidAngle * bsdf * max(0.0, dot(hitNormal, dirToLight)) * weight * scene.lights.length;
-
 								color = color + explicitRadianceContrib * weight;
 							}
 
 							break;
 						case LightType.POINT: 
+							// Point lights are non-realistic bullshit anyways :D
 							/*Vec3f target = light.point.position;
 
 							Vec3f dirToLight = (target - hitPoint).normalize();
@@ -130,7 +130,10 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
 				last_specular = mat.bsdf.is_specular;
 			} else {
 				// "sky" color
-				//color = color + Vec3f([0.0f, 0.005f, 0.015f]) * 10.0* weight;
+				if(!explicit_light_sampling || last_specular || depth == 0	) {
+					Vec3f L_e = Vec3f(scene.skyLight.material.emission) * scene.skyLight.material.color;
+					color = color + L_e * weight;
+				}
 				break;
 			}
 

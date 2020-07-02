@@ -22,9 +22,9 @@ struct EmmissivePrimitive {
 
 struct Light {
 	LightType type;
-	//union {
+	union {
 		SkyLight sky;
 		PointLight point;
 		EmmissivePrimitive primitive;
-	//}
+	}
 }
