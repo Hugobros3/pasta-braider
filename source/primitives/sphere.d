@@ -1,15 +1,15 @@
 import vector;
 import ray;
 import material;
-import sphere_sampling_helper;
 
-import performance;
-import rng;
+import uniform_sampling;
+import fast_math;
+import constants;
 
 struct Sphere {
     Vec3f center;
     float radius;
-    Material* material;
+    const Material* material;
 
     @nogc bool intersect(const ref Ray ray, ref float t) const {
         const auto oc = (ray.origin - center);//.normalize();
@@ -48,7 +48,7 @@ struct Sphere {
 	}
 
     @nogc const void randomPointOnSurface(ref Vec3f position, ref Vec3f normal) {
-        normal = sampleSphere(Vec2f([uniform_rng(), uniform_rng()]));
+        normal = sample_random_direction_uniform(Vec2f([uniform_rng(), uniform_rng()]));
         position = normal * radius + center;
 	}
 

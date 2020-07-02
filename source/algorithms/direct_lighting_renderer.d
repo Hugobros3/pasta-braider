@@ -7,12 +7,15 @@ import scene;
 import material;
 import bsdf;
 import light;
-import performance;
+
+import fast_math;
+import uniform_sampling;
+
 import std.algorithm;
 
 auto make_direct_lighting_renderer(ColorSpace, PrimitiveType)() {
 	return function RGB(immutable ref Camera camera, const Vec2i viewportSize, Vec2i pos, const ref Scene!(PrimitiveType) scene) @nogc { 
-		Ray ray = generateRay(camera, viewportSize, Vec2f([pos.x + 0.5f, pos.y + 0.5f]));
+		Ray ray = generateRay(camera, viewportSize, Vec2f([pos.x + uniform_rng(), pos.y + uniform_rng()]));
 		Hit hit = scene.intersect(ray);
 
 		if(hit.primId != -1) {
@@ -43,7 +46,7 @@ auto make_direct_lighting_renderer(ColorSpace, PrimitiveType)() {
 
 auto make_direct_lighting_renderer_explicit_light_sampling(ColorSpace, PrimitiveType)() {
 	return function RGB(immutable ref Camera camera, const Vec2i viewportSize, Vec2i pos, const ref Scene!(PrimitiveType) scene) @nogc { 
-		Ray ray = generateRay(camera, viewportSize, Vec2f([pos.x + 0.5f, pos.y + 0.5f]));
+		Ray ray = generateRay(camera, viewportSize, Vec2f([pos.x + uniform_rng(), pos.y + uniform_rng()]));
 		Hit hit = scene.intersect(ray);
 
 		if(hit.primId != -1) {
@@ -61,14 +64,14 @@ auto make_direct_lighting_renderer_explicit_light_sampling(ColorSpace, Primitive
 					// TODO
 					break;
 				case LightType.EMMISSIVE_PRIMITIVE: 
-					// Pick a random point on the primitive
+
+					// Sample the light surface
 					Vec3f lightSamplePos;
 					Vec3f lightSampleNorm;
-
 					scene.primitives[light.primitive.index].randomPointOnSurface(lightSamplePos, lightSampleNorm);
-					float area = scene.primitives[light.primitive.index].area(); 
-					float pdf_area = 1.0 / area;
+					float pdf_area = 1.0 / scene.primitives[light.primitive.index].area();
 
+					// Point a ray towards it
 					Vec3f dirToLight = (lightSamplePos - hitPoint).normalize();
 					Ray rayToLight = { hitPoint + dirToLight * 0.01, dirToLight };
 					float distanceToLight = (lightSamplePos - hitPoint).length();
@@ -77,7 +80,9 @@ auto make_direct_lighting_renderer_explicit_light_sampling(ColorSpace, Primitive
 
 					// TODO provide tMin/tMax in intersect to begin with
 					Hit lightConnection = scene.intersect(rayToLight);
-					if(lightConnection.primId == light.primitive.index && lightConnection.t <= distanceToLight + 0.01) {
+
+					// The ray connects, let's compute the contribution !
+					if(lightConnection.primId == light.primitive.index && lightConnection.t <= distanceToLight + 0.001) {
 						float pdf_point_on_light = pdf_light_source * pdf_area;
 
 						float cos_e = max(0.0, dot(hitNormal,       dirToLight));
@@ -85,8 +90,10 @@ auto make_direct_lighting_renderer_explicit_light_sampling(ColorSpace, Primitive
 
 						const Material* lightMat = scene.primitives[light.primitive.index].material;
 
-						float pdf_e = mat.bsdf.pdf(ray.direction, hitNormal, rayToLight.direction);
-						float mis = 1.0f / (1.0 + pdf_e * cos_l * inv_d2 / pdf_point_on_light);
+						//float pdf_e = mat.bsdf.pdf(ray.direction, hitNormal, rayToLight.direction);
+						//float mis = 1.0f / (1.0 + pdf_e * cos_l * inv_d2 / pdf_point_on_light);
+						float mis = 1.0;
+						
 						return (lightMat.color * lightMat.emission) * mat.bsdf.evaluate(ray.direction, hitNormal, rayToLight.direction) * cos_e * cos_l * inv_d2 * (mis / pdf_point_on_light);
 					}
 

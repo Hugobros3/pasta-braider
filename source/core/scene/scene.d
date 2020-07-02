@@ -1,6 +1,6 @@
 import ray;
 
-import rng;
+import uniform_sampling;
 import light;
 
 class Scene(PrimitiveType) 

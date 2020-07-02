@@ -8,8 +8,8 @@ import std.range;
 import core.time;
 import std.parallelism;
 
-import performance;
-import rng;
+import fast_math;
+import uniform_sampling;
 
 import film;
 import color;
@@ -17,14 +17,16 @@ import vector;
 import camera;
 import ray;
 import scene;
-import algo;
 import material;
 import light;
 
 import sphere;
 
 //import pt;
-import direct_lighting;
+import debug_renderer;
+import direct_lighting_renderer;
+
+import balls;
 
 import bindbc.sdl;
 
@@ -32,16 +34,8 @@ class Window : Film!(RGB) {
     private Vec2i _size = [1024, 1024];
     private RGB[] _pixels;
 
-    private Scene!Sphere scene = new Scene!Sphere();
+    private Scene!Sphere scene;// = make_balls_scene();
     private Camera camera;
-
-	Material emmissiveMat =      make_diffuse_material!( Vec3f([1.0, 0.5, 0.0]), 10.0f );
-	Material veryEmmissiveMat =  make_diffuse_material!( Vec3f([1.0, 0.0, 1.0]), 2.0f );
-	Material veryEmmissiveMat2 = make_diffuse_material!( Vec3f([0.0, 1.0, 0.0]), 2.0f );
-
-	Material diffuseRedMat =     make_diffuse_material!( Vec3f([1.0, 0.0, 0.0]), 0.0f );
-	Material diffuseGreyMat =    make_diffuse_material!( Vec3f([0.8, 0.8, 0.8]), 0.0f );
-	Material skyMaterial =       make_diffuse_material!( Vec3f([0.0f, 0.005f, 0.015f]), 0.0f );
 
     this() { 
 		//defaultPoolThreads(16);
@@ -64,40 +58,7 @@ class Window : Film!(RGB) {
         camera.position = Vec3f([0.0, 0.0, 0.0]);
         camera.lookingAt = Vec3f([1.0, 0.0, 0.0]);
 
-        scene.primitives ~= Sphere(Vec3f([10.0, 0.0, -100.0]), 98.5f, &diffuseGreyMat);
-
-        scene.primitives ~= Sphere(Vec3f([12.0, -5.0, 10.0]), 1.5f, &emmissiveMat);
-
-        scene.primitives ~= Sphere(Vec3f([8.5, 0.0, 0.0]), 0.5f, &veryEmmissiveMat);
-        scene.primitives ~= Sphere(Vec3f([6.5, 3.0, -1.0]), 0.5f, &veryEmmissiveMat2);
-
-        scene.primitives ~= Sphere(Vec3f([10.0, 4.0, 0.0]), 1.5f, &diffuseRedMat);
-        scene.primitives ~= Sphere(Vec3f([12.0, 0.0, 0.0]), 2.5f, &diffuseGreyMat);
-        scene.primitives ~= Sphere(Vec3f([10.0, -5.0, 0.0]), 3.5f, &diffuseRedMat);
-
-        scene.addEmmissivePrimitives();
-
-        Light skyLight = {
-		    type: LightType.SKY,
-		    sky: SkyLight(skyMaterial)
-		};
-        //scene.lights ~= skyLight;
-
-
-        /*Light pointLight = {
-		    type: LightType.POINT,
-		    point: PointLight(veryEmmissiveMat2, Vec3f([8.5, 0.0, 0.0]))
-		    };
-		scene.lights ~= pointLight;
-        Light pointLight2 = {
-		    type: LightType.POINT,
-		    point: PointLight(veryEmmissiveMat, Vec3f([6.5, 3.0, -1.0]))
-		    };
-		scene.lights ~= pointLight2;*/
-
-        foreach(primId, primitive; scene.primitives) {
-            writeln(primitive);
-		}
+        scene = make_balls_scene();
     }
 
     void run() {
@@ -125,6 +86,7 @@ class Window : Film!(RGB) {
 
             immutable @nogc auto algorithm = make_direct_lighting_renderer!(RGB, Sphere);
             //immutable @nogc auto algorithm = make_direct_lighting_renderer_explicit_light_sampling!(RGB, Sphere);
+            //immutable @nogc auto algorithm = make_debug_renderer!(RGB, Sphere);
             draw!(algorithm)(this);
 
             float invAcc = 1.0f / acc;
@@ -144,7 +106,6 @@ class Window : Film!(RGB) {
 
             SDL_UpdateTexture(texture, null, cast(const(void*))(buf.ptr), cast(int)(size.x() * uint.sizeof));
 
-            //SDL_RenderClear(renderer);
             SDL_RenderCopy(renderer, texture, null, null);
             SDL_RenderPresent(renderer);
 
@@ -195,7 +156,7 @@ void draw(immutable(RGB function(immutable ref Camera, const Vec2i, Vec2i, const
 		seedRng();
         auto yr = iota(0, window.size.y);
         foreach(y; yr) {
-            immutable auto spp = 1;
+            immutable auto spp = 4;
             RGB samples = 0.0;
             foreach(sample; 0 .. spp) {
                 samples = samples + renderer(imRef, viewportSize, Vec2i ([x, y]), window.scene) * (1.0 / spp);

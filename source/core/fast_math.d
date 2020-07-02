@@ -1,4 +1,4 @@
-import std.math : slow_cos = cos, slow_sin = sin;
+import std.math : slow_cos = cos, slow_sin = sin, slow_acos = acos;
 
 version(LDC) {
 	pragma(msg, "LDC compiler detected, using the fast stuff :)");
@@ -10,7 +10,7 @@ version(LDC) {
 		return sqrt(f);
 	}
 }
-immutable float PI = 3.14159265359;
 
-@nogc pure float cos(float v) { return slow_cos(v); }
-@nogc pure float sin(float v) { return slow_sin(v); }
+@nogc pure float cos(float v)  { return slow_cos(v); }
+@nogc pure float sin(float v)  { return slow_sin(v); }
+@nogc pure float acos(float v) { return slow_acos(v); }

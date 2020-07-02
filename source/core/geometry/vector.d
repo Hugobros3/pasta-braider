@@ -9,7 +9,7 @@ import std.encoding;
 
 import core.simd;
 
-import performance;
+import fast_math;
 
 version(D_SIMD) {
     pragma(msg, "yes");
