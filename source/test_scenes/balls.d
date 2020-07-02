@@ -37,17 +37,5 @@ Scene!Sphere make_balls_scene() {
 	};
 	//scene.lights ~= skyLight;
 
-
-	/*Light pointLight = {
-	type: LightType.POINT,
-	point: PointLight(veryEmmissiveMat2, Vec3f([8.5, 0.0, 0.0]))
-	};
-	scene.lights ~= pointLight;
-	Light pointLight2 = {
-	type: LightType.POINT,
-	point: PointLight(veryEmmissiveMat, Vec3f([6.5, 3.0, -1.0]))
-	};
-	scene.lights ~= pointLight2;*/
-
 	return scene;
 }

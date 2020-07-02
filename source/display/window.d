@@ -27,6 +27,7 @@ import debug_renderer;
 import direct_lighting_renderer;
 
 import balls;
+import cornell_balls;
 
 import bindbc.sdl;
 
@@ -34,7 +35,7 @@ class Window : Film!(RGB) {
     private Vec2i _size = [1024, 1024];
     private RGB[] _pixels;
 
-    private Scene!Sphere scene;// = make_balls_scene();
+    private Scene!Sphere scene;
     private Camera camera;
 
     this() { 
@@ -58,7 +59,7 @@ class Window : Film!(RGB) {
         camera.position = Vec3f([0.0, 0.0, 0.0]);
         camera.lookingAt = Vec3f([1.0, 0.0, 0.0]);
 
-        scene = make_balls_scene();
+        scene = make_cornel_balls_scene();
     }
 
     void run() {
@@ -94,7 +95,6 @@ class Window : Film!(RGB) {
             auto xr = iota(0, size.x);
             foreach(x ; parallel(xr)) {
                 foreach(y ; 0 .. _size.y()) {
-                    //ubyte luminance = cast(ubyte)uniform(0, 255);
                     auto rgb = _pixels[((y * _size.x) + x)];
 
                     buf[((y * _size.x) + x) * 4 + 3] = cast(ubyte)clamp(cast(int)(sqrt(rgb.x * invAcc) * 255), 0, 255);
