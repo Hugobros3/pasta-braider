@@ -60,7 +60,7 @@ class Window : Film!(RGB) {
         camera.position = Vec3f([0.0, 0.0, 0.0]);
         camera.lookingAt = Vec3f([1.0, 0.0, 0.0]);
 
-        scene = make_balls_scene();
+        scene = make_cornell_balls_scene();
     }
 
     void run() {

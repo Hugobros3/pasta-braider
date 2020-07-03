@@ -30,12 +30,12 @@ BSDF make_diffuse_bsdf(immutable Vec3f albedo)() {
             direction = -direction;
 		}
 
-		immutable float Kd = 1.0 / (2.0 * PI);
+		immutable float Kd = 1.0 / PI;
         return BSDFSample(direction, UNIFORM_SAMPLED_HEMISPHERE_PDF, albedo * Kd);
     };
 
     @nogc Vec3f function(Vec3f, Vec3f, Vec3f) evalFn = function(Vec3f incommingDir, Vec3f surfaceNormal, Vec3f outgoingDir) {
-		immutable float Kd = 1.0 / (2.0 * PI);
+		immutable float Kd = 1.0 / PI;
         return albedo * Kd;
     };
 
