@@ -2,29 +2,29 @@ import vector;
 import material;
 
 enum LightType {
-	SKY,
-	EMMISSIVE_PRIMITIVE,
-	POINT
+    SKY,
+    EMMISSIVE_PRIMITIVE,
+    POINT
 }
 
 struct SkyLight {
-	Material material;
+    Material material;
 }
 
 struct PointLight {
-	Material material;
-	Vec3f position;
+    Material material;
+    Vec3f position;
 }
 
 struct EmmissivePrimitive {
-	int index;
+    int index;
 }
 
 struct Light {
-	LightType type;
-	union {
-		SkyLight sky;
-		PointLight point;
-		EmmissivePrimitive primitive;
-	}
+    LightType type;
+    union {
+        SkyLight sky;
+        PointLight point;
+        EmmissivePrimitive primitive;
+    }
 }

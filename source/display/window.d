@@ -40,7 +40,7 @@ class Window : Film!(RGB) {
     private CameraController controller;
 
     this() { 
-		//defaultPoolThreads(16);
+        //defaultPoolThreads(16);
 
         _pixels = new RGB[_size.x * _size.y];
         SDLSupport ret = loadSDL();
@@ -75,18 +75,18 @@ class Window : Film!(RGB) {
         bool quit = false;
         SDL_Event event;
 
-		clear();
+        clear();
         int acc = 0;
         while (!quit) {
             MonoTime frameStart = MonoTime.currTime;
 
             if(controller.update()) {
-				clear();
-				acc = 0;
-			} 
+                clear();
+                acc = 0;
+            } 
             acc++;
             camera.position = controller.position;
-			camera.lookingAt = controller.get_view_dir().normalize();
+            camera.lookingAt = controller.get_view_dir().normalize();
             camera.update();
 
             //immutable @nogc auto algorithm = make_debug_renderer!(RGB, Sphere);
@@ -96,7 +96,7 @@ class Window : Film!(RGB) {
             draw!(algorithm)(this);
 
             float invAcc = 1.0f / acc;
-        	
+            
             auto xr = iota(0, size.x);
             foreach(x ; parallel(xr)) {
                 foreach(y ; 0 .. _size.y()) {
@@ -155,17 +155,17 @@ class Window : Film!(RGB) {
 void draw(immutable(RGB function(immutable ref Camera, const Vec2i, Vec2i, const ref Scene!(Sphere)) @nogc) renderer)(Window window) {
     Vec2i viewportSize = window.size();
     immutable Camera imRef = window.camera;
-	auto xr = iota(0, window.size.x);
+    auto xr = iota(0, window.size.x);
     foreach(x; parallel(xr, 1)) {
     //foreach(x; xr) {
-		seedRng();
+        seedRng();
         auto yr = iota(0, window.size.y);
         foreach(y; yr) {
             immutable auto spp = 1;
             RGB samples = 0.0;
             foreach(sample; 0 .. spp) {
                 samples = samples + renderer(imRef, viewportSize, Vec2i ([x, y]), window.scene) * (1.0 / spp);
-			}
+            }
             window.add(Vec2i([x, y]), samples );
         }   
     }

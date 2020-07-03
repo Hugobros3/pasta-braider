@@ -22,16 +22,16 @@ class Scene(PrimitiveType)
                 if(t < hit.t) {
                     hit.primId = cast(int)primId;
                     hit.t = t;
-				}
-			}
-		}
+                }
+            }
+        }
         return hit;
-	}
+    }
 
     void preProcessLights() {
         addEmmissivePrimitives();
         findSkyLight();
-	}
+    }
 
     private void addEmmissivePrimitives() {
         foreach(primId, primitive; primitives) {
@@ -39,23 +39,23 @@ class Scene(PrimitiveType)
                 Light light = {
                     type: LightType.EMMISSIVE_PRIMITIVE,
                     primitive: EmmissivePrimitive(cast(int)primId)
-				};
+                };
                 lights ~= light;
-			}
-		}
-	}
+            }
+        }
+    }
 
     private void findSkyLight() {
         foreach(light; lights) {
             if(light.type == LightType.SKY) {
                 skyLight = light.sky;
-			}
-		}
-	}
+            }
+        }
+    }
 
     final @nogc Light pickRandomLight() const {
         return lights[uniform_range(0, cast(int)lights.length)];
-	}
+    }
 }
 
 interface AccelerationStructure(PrimitiveType) {

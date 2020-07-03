@@ -10,9 +10,9 @@ struct Camera {
 
     Vec3f h, v;
     void update() {
-		v = (cross(up, lookingAt));
-		h = (cross(v, lookingAt));
-	}
+        v = (cross(up, lookingAt));
+        h = (cross(v, lookingAt));
+    }
 }
 
 @nogc Ray generateRay(immutable ref Camera camera, const Vec2i viewportSize, const Vec2f viewportPosition) {
@@ -25,6 +25,6 @@ struct Camera {
     Ray ray = {
         origin: camera.position,
         direction: rayDirection
-	};
+    };
     return ray;
 }

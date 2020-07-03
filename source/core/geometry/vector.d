@@ -167,8 +167,8 @@ struct Vec(int dim, T) {
     pragma(inline, true)
     @nogc pure const auto opDispatch(string s)() if(isSwizzleName!(s) && s.length > 1) {
         Vec!(s.length, T) target;
-		static foreach (int i; 0..s.length) {
-			target.data[i] = data[swizzleIndex(s[i])];
+        static foreach (int i; 0..s.length) {
+            target.data[i] = data[swizzleIndex(s[i])];
         }
         return target;
     }
