@@ -32,7 +32,7 @@ import cornell_balls;
 import bindbc.sdl;
 
 class Window : Film!(RGB) {
-    private Vec2i _size = [1024, 1024];
+    private Vec2i _size = [768, 768];
     private RGB[] _pixels;
 
     private Scene!Sphere scene;

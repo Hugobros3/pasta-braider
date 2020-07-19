@@ -33,9 +33,6 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
             // TODO: proper russian roulette
             if(depth > 5)
                 break;
-
-            //if(depth > 1)
-            //    break;
             
             Hit hit = scene.intersect(ray);
 
@@ -45,32 +42,28 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
                 const Material* mat = scene.primitives[hit.primId].material;
 
                 if(explicit_light_sampling && !mat.bsdf.is_specular) {
-                    //Vec3f bsdf = (mat.color * (1.0 / PI));
-
                     Light light = scene.pickRandomLight();
                     float pdf_light_source = 1.0 / scene.lights.length;
 
                     final switch(light.type) {
                         case LightType.SKY:
                             // Sampling the sky is done by picking a random direction, as the sky encloses the entire scene
-                            Vec3f dirToSky = sample_random_direction_uniform(Vec2f([uniform_rng(), uniform_rng()]));
-                            float pdf_dir = UNIFORM_SAMPLED_SPHERE_PDF;
+                            auto sky_sample = sample_direction_sphere_uniform(Vec2f([uniform_rng(), uniform_rng()]));
 
-                            Ray rayToSky = { hitPoint + dirToSky * 0.01, dirToSky};
+                            Ray rayToSky = { hitPoint + sky_sample.direction * 0.01, sky_sample.direction};
 
                             Hit lightConnection = scene.intersect(rayToSky);
                             if(lightConnection.primId == -1) {
-                                Vec3f explicitRadianceContrib = light.sky.material.color * light.sky.material.emission * mat.bsdf.evaluate(ray.direction, hitNormal, rayToSky.direction) * (dot(hitNormal, dirToSky) / (pdf_dir * pdf_light_source));
+                                Vec3f explicitRadianceContrib = light.sky.material.color * light.sky.material.emission * mat.bsdf.evaluate(ray.direction, hitNormal, rayToSky.direction) * (dot(hitNormal, sky_sample.direction) / (sky_sample.pdf * pdf_light_source));
                                 color = color + explicitRadianceContrib * weight;
                             }
                             break;
-                        case LightType.EMMISSIVE_PRIMITIVE: 
-
+                        case LightType.EMMISSIVE_PRIMITIVE:
                             // Sample the light surface
                             Vec3f lightSamplePos;
                             Vec3f lightSampleNorm;
-                            scene.primitives[light.primitive.index].randomPointOnSurface(lightSamplePos, lightSampleNorm);
-                            float pdf_area = 1.0 / scene.primitives[light.primitive.index].area(); 
+                            float pdf_surface;
+                            scene.primitives[light.primitive.index].random_point_on_surface(lightSamplePos, lightSampleNorm, pdf_surface);
                         
                             // Point a ray towards it
                             Vec3f dirToLight = (lightSamplePos - hitPoint).normalize();
@@ -82,7 +75,7 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
                             // TODO provide tMin/tMax in intersect to begin with
                             Hit lightConnection = scene.intersect(rayToLight);
                             if(lightConnection.primId == light.primitive.index && lightConnection.t <= distanceToLight + 0.01) {
-                                float pdf_point_on_light = pdf_light_source * pdf_area;
+                                float pdf_point_on_light = pdf_light_source * pdf_surface;
 
                                 float cos_e = max(0.0, dot(hitNormal,       dirToLight));
                                 float cos_l = max(0.0, dot(lightSampleNorm, dirToLight));

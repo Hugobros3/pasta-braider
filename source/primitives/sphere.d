@@ -47,9 +47,11 @@ struct Sphere {
         return (p - center) * (1.0 / radius);
     }
 
-    @nogc const void randomPointOnSurface(ref Vec3f position, ref Vec3f normal) {
-        normal = sample_random_direction_uniform(Vec2f([uniform_rng(), uniform_rng()]));
+    @nogc const void random_point_on_surface(ref Vec3f position, ref Vec3f normal, ref float pdf) {
+        auto sample = sample_direction_sphere_uniform(Vec2f([uniform_rng(), uniform_rng()]));
+        normal = sample.direction;
         position = normal * radius + center;
+        pdf = 1.0 / this.area();
     }
 
     @nogc const float area() {

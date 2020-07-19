@@ -1,5 +1,6 @@
 import vector;
 import uniform_sampling;
+import cosine_weighted;
 import fast_math;
 import constants;
 
@@ -21,17 +22,11 @@ BSDF make_diffuse_bsdf(immutable Vec3f albedo)() {
     // to be more correct we'd need to check for that and return a pdf of 0.0 when in the "lower" (refraction) hemi
 
     @nogc BSDFSample function(Vec3f, Vec3f) samplingFn = function(Vec3f incommingDir, Vec3f surfaceNormal) {
-		//Vec3f direction = mapRectToCosineHemisphere(surfaceNormal, Vec2f([uniform_rng(), uniform_rng()]));
-
-        Vec3f direction = sample_random_direction_uniform(Vec2f([uniform_rng(), uniform_rng()]));
-
-        // Fold uniform sampled sphere on itself !
-        if(dot(direction, surfaceNormal) < 0) {
-            direction = -direction;
-		}
+		//auto bounce_dir_sample = sample_direction_hemisphere_uniform_with_normal(Vec2f([uniform_rng(), uniform_rng()]), surfaceNormal);
+		auto bounce_dir_sample = sample_direction_hemisphere_cosine_weighted_with_normal(Vec2f([uniform_rng(), uniform_rng()]), surfaceNormal);
 
 		immutable float Kd = 1.0 / PI;
-        return BSDFSample(direction, UNIFORM_SAMPLED_HEMISPHERE_PDF, albedo * Kd);
+        return BSDFSample(bounce_dir_sample.direction, bounce_dir_sample.pdf, albedo * Kd);
     };
 
     @nogc Vec3f function(Vec3f, Vec3f, Vec3f) evalFn = function(Vec3f incommingDir, Vec3f surfaceNormal, Vec3f outgoingDir) {
