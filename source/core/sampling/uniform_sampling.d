@@ -10,6 +10,7 @@ void seedRng() {
     rng.seed(unpredictableSeed);
 }
 
+/// Generates a uniform random value between 0 and 1.0
 @nogc float uniform_rng() {
     float val = (float(rng.front) * (1.0f / ((uint.max))));
     rng.popFront();
@@ -29,16 +30,7 @@ struct SampledDirection {
 
 immutable float UNIFORM_SAMPLED_SPHERE_PDF = 1.0 / (4.0 * PI);
 @nogc SampledDirection sample_direction_sphere_uniform(Vec2f randomVals) {
-    /*//const float sign = uv.x > 0.5 ? 1.0 : -1.0;
-    const float uvx = (uv.x * 2.0) - 1.0;
-
-    const float r = sqrt(1.0f - uvx * uvx);// * sign;
-    const float phi = 2.0 * PI * uv.y;
-    //return sampleHemisphere(uv);
-    return Vec3f([cos(phi) * r, sin(phi) * r, uvx]);
-    */
-
-    // https://www.bogotobogo.com/Algorithms/uniform_distribution_sphere.php
+    // from https://www.bogotobogo.com/Algorithms/uniform_distribution_sphere.php
     float theta = 2.0*PI*randomVals.x;
     float phi = acos(2.0*randomVals.y-1.0);
 

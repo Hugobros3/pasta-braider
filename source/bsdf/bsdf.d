@@ -3,6 +3,7 @@ import uniform_sampling;
 import cosine_weighted;
 import fast_math;
 import constants;
+import std.algorithm : max;
 
 struct BSDFSample {
     Vec3f direction;
@@ -23,7 +24,7 @@ BSDF make_diffuse_bsdf(immutable Vec3f albedo)() {
 
     @nogc BSDFSample function(Vec3f, Vec3f) samplingFn = function(Vec3f incommingDir, Vec3f surfaceNormal) {
 		//auto bounce_dir_sample = sample_direction_hemisphere_uniform_with_normal(Vec2f([uniform_rng(), uniform_rng()]), surfaceNormal);
-		auto bounce_dir_sample = sample_direction_hemisphere_cosine_weighted_with_normal(Vec2f([uniform_rng(), uniform_rng()]), surfaceNormal);
+		auto bounce_dir_sample = sample_direction_hemisphere_cosine_weighted_with_normal2(Vec2f([uniform_rng(), uniform_rng()]), surfaceNormal);
 
 		immutable float Kd = 1.0 / PI;
         return BSDFSample(bounce_dir_sample.direction, bounce_dir_sample.pdf, albedo * Kd);
@@ -35,7 +36,8 @@ BSDF make_diffuse_bsdf(immutable Vec3f albedo)() {
     };
 
     @nogc float function(Vec3f, Vec3f, Vec3f) pdfFn = function(Vec3f incommingDir, Vec3f surfaceNormal, Vec3f outgoingDir) {
-        return UNIFORM_SAMPLED_HEMISPHERE_PDF;
+        return max(dot(incommingDir, surfaceNormal), 0.0) / PI;
+		//return UNIFORM_SAMPLED_HEMISPHERE_PDF;
     };
 
     return BSDF(false, samplingFn, evalFn, pdfFn);
