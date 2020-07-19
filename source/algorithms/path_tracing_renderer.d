@@ -30,9 +30,14 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
         int depth = 0;
         Vec3f weight = 1.0;
         while(true) {
-            // TODO: proper russian roulette
-            if(depth > 5)
-                break;
+            if(depth > 2) {
+                float rr_death_probability = 0.75;
+                if(uniform_rng() >= rr_death_probability) {
+                    break;
+				} else {
+                    weight = weight * (1.0 / rr_death_probability);
+				}
+			}
             
             Hit hit = scene.intersect(ray);
 
