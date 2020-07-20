@@ -24,22 +24,20 @@ import path_tracing_renderer;
 import debug_renderer;
 import direct_lighting_renderer;
 
-import sphere;
-
 import balls;
 import cornell_balls;
 
 import bindbc.sdl;
 
-class Window : Film!(RGB) {
+class Window(PrimitiveType) : Film!(RGB) {
     private Vec2i _size = [768, 768];
     private RGB[] _pixels;
 
-    private Scene!Sphere scene;
+    private Scene!PrimitiveType scene;
     private Camera camera;
     private CameraController controller;
 
-    this() { 
+    this(Scene!PrimitiveType scene) { 
         //defaultPoolThreads(16);
 
         _pixels = new RGB[_size.x * _size.y];
@@ -60,7 +58,8 @@ class Window : Film!(RGB) {
         camera.position = Vec3f([0.0, 0.0, 0.0]);
         camera.lookingAt = Vec3f([1.0, 0.0, 0.0]);
 
-        scene = make_cornell_balls_scene();
+        this.scene = scene;
+        //scene = make_cornell_balls_scene();
     }
 
     void run() {
@@ -89,10 +88,10 @@ class Window : Film!(RGB) {
             camera.lookingAt = controller.get_view_dir().normalize();
             camera.update();
 
-            //immutable @nogc auto algorithm = make_debug_renderer!(RGB, Sphere);
-            //immutable @nogc auto algorithm = make_direct_lighting_renderer!(RGB, Sphere);
-            //immutable @nogc auto algorithm = make_direct_lighting_renderer_explicit_light_sampling!(RGB, Sphere);
-            immutable @nogc auto algorithm = make_path_tracing_renderer!(RGB, Sphere);
+            //immutable @nogc auto algorithm = make_debug_renderer!(RGB, PrimitiveType);
+            //immutable @nogc auto algorithm = make_direct_lighting_renderer!(RGB, PrimitiveType);
+            //immutable @nogc auto algorithm = make_direct_lighting_renderer_explicit_light_sampling!(RGB, PrimitiveType);
+            immutable @nogc auto algorithm = make_path_tracing_renderer!(RGB, PrimitiveType);
             draw!(algorithm)(this);
 
             float invAcc = 1.0f / acc;
@@ -150,23 +149,23 @@ class Window : Film!(RGB) {
     final override void add(Vec2i position, RGB contribution) {
         _pixels[position.x * size.y + position.y] = _pixels[position.x * size.y + position.y] + contribution;
     }
-}
 
-void draw(immutable(RGB function(immutable ref Camera, const Vec2i, Vec2i, const ref Scene!(Sphere)) @nogc) renderer)(Window window) {
-    Vec2i viewportSize = window.size();
-    immutable Camera imRef = window.camera;
-    auto xr = iota(0, window.size.x);
-    foreach(x; parallel(xr, 1)) {
-    //foreach(x; xr) {
-        seedRng();
-        auto yr = iota(0, window.size.y);
-        foreach(y; yr) {
-            immutable auto spp = 1;
-            RGB samples = 0.0;
-            foreach(sample; 0 .. spp) {
-                samples = samples + renderer(imRef, viewportSize, Vec2i ([x, y]), window.scene) * (1.0 / spp);
-            }
-            window.add(Vec2i([x, y]), samples );
-        }   
-    }
+    static void draw(immutable(RGB function(immutable ref Camera, const Vec2i, Vec2i, const ref Scene!PrimitiveType) @nogc) renderer)(Window!PrimitiveType window) {
+		Vec2i viewportSize = window.size();
+		immutable Camera imRef = window.camera;
+		auto xr = iota(0, window.size.x);
+		foreach(x; parallel(xr, 1)) {
+			//foreach(x; xr) {
+			seedRng();
+			auto yr = iota(0, window.size.y);
+			foreach(y; yr) {
+				immutable auto spp = 1;
+				RGB samples = 0.0;
+				foreach(sample; 0 .. spp) {
+					samples = samples + renderer(imRef, viewportSize, Vec2i ([x, y]), window.scene) * (1.0 / spp);
+				}
+				window.add(Vec2i([x, y]), samples );
+			}   
+		}
+	}
 }

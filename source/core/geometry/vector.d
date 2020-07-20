@@ -46,6 +46,18 @@ struct Vec(int dim, T) {
         }
         return newVec;
     }
+    pragma(inline, true)
+    @nogc pure Self opBinaryRight(string s)(const T scalar) const if (s == "*") {
+        Self newVec;
+        static if(is_simd) {
+            newVec.data = data * scalar;
+        } else {
+            static foreach(i; 0 .. dim) {
+                newVec.data[i] = data[i] * scalar;
+            }
+        }
+        return newVec;
+    }
 
     private static immutable string[] vectorOperators = ["*", "/", "+", "-", "%"];
     /// Traditional operations extended to vectors
