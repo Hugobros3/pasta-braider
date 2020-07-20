@@ -228,7 +228,7 @@ struct Vec(int dim, T) {
 
 /// Cross product (3d specialized version)
 pragma(inline, true)
-@nogc pure Vec3f cross(const ref Vec3f a, const ref Vec3f b) {
+@nogc pure Vec3f cross(const Vec3f a, const Vec3f b) {
     Vec3f v = a.yzx * b.zxy - a.zxy * b.yzx;
     Vec3f vec = [
                     a.y * b.z - a.z * b.y,

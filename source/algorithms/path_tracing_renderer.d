@@ -79,11 +79,11 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
 
                             // TODO provide tMin/tMax in intersect to begin with
                             Hit lightConnection = scene.intersect(rayToLight);
-                            if(lightConnection.primId == light.primitive.index && lightConnection.t <= distanceToLight + 0.01) {
+                            if(lightConnection.primId == light.primitive.index && lightConnection.t <= distanceToLight + 0.001) {
                                 float pdf_point_on_light = pdf_light_source * pdf_surface;
 
                                 float cos_e = max(0.0, dot(hitNormal,       dirToLight));
-                                float cos_l = max(0.0, dot(lightSampleNorm, dirToLight));
+                                float cos_l = max(0.0, dot(lightSampleNorm, -dirToLight));
 
                                 const Material* lightMat = scene.primitives[light.primitive.index].material;
 

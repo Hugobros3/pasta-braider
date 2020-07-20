@@ -68,8 +68,9 @@ auto make_direct_lighting_renderer_explicit_light_sampling(ColorSpace, Primitive
                     // Sample the light surface
                     Vec3f lightSamplePos;
                     Vec3f lightSampleNorm;
-                    scene.primitives[light.primitive.index].randomPointOnSurface(lightSamplePos, lightSampleNorm);
-                    float pdf_area = 1.0 / scene.primitives[light.primitive.index].area();
+                    float pdf_area;
+					scene.primitives[light.primitive.index].random_point_on_surface(lightSamplePos, lightSampleNorm, pdf_area);
+                    //float pdf_area = 1.0 / scene.primitives[light.primitive.index].area();
 
                     // Point a ray towards it
                     Vec3f dirToLight = (lightSamplePos - hitPoint).normalize();
@@ -86,7 +87,7 @@ auto make_direct_lighting_renderer_explicit_light_sampling(ColorSpace, Primitive
                         float pdf_point_on_light = pdf_light_source * pdf_area;
 
                         float cos_e = max(0.0, dot(hitNormal,       dirToLight));
-                        float cos_l = max(0.0, dot(lightSampleNorm, dirToLight));
+                        float cos_l = max(0.0, dot(lightSampleNorm, -dirToLight));
 
                         const Material* lightMat = scene.primitives[light.primitive.index].material;
 

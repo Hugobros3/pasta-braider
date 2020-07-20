@@ -13,7 +13,11 @@ auto make_debug_renderer(ColorSpace, PrimitiveType)() {
 
         if(hit.primId != -1) {
             const Material* mat = scene.primitives[hit.primId].material;
-            return mat.color;
+
+            const Vec3f hitPoint = ray.origin + ray.direction * hit.t;
+            const Vec3f normal = scene.primitives[hit.primId].normal(hitPoint);
+            //return mat.color;
+            return normal * 0.5 + Vec3f(0.5);
         }
 
         return RGB([0.0f, 0.5f, 1.0f]);

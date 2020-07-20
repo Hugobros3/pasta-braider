@@ -40,6 +40,15 @@ void load(string file) {
 
 	for(int i = 0; i < scene.mNumMeshes; i++) {
 		const aiMesh* mesh = scene.mMeshes[i];
+		const aiMaterial* material = scene.mMaterials[mesh.mMaterialIndex];
 		printf("vertices: %d \n", mesh.mNumVertices);
+
+		//const aiMaterialProperty* prop;
+		//aiGetMaterialProperty(material, toStringz("?mat.name"), 0, 0, &prop);
+		aiString prop;
+		aiGetMaterialString(material, toStringz("?mat.name"), 0, 0, &prop);
+		string mah_string = prop.data[0 .. prop.length].idup;
+
+		writeln("material name: ", mah_string);
 	}
 }
