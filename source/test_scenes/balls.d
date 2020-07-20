@@ -5,7 +5,7 @@ import material;
 import vector;
 import light;
 
-private immutable { 
+private { 
     Material emmissiveMat =      make_diffuse_material!( Vec3f([1.0, 0.5, 0.0]), 10.0f );
     Material veryEmmissiveMat =  make_diffuse_material!( Vec3f([1.0, 0.0, 1.0]), 2.0f );
     Material veryEmmissiveMat2 = make_diffuse_material!( Vec3f([0.0, 1.0, 0.0]), 2.0f );

@@ -9,7 +9,7 @@ import light;
 import std.stdio;
 import bindbc.assimp;
 
-private immutable { 
+private { 
     Material emmissiveMat =      make_diffuse_material!( Vec3f([1.0, 1.0, 1.0]), 100.0f );
 
     Material errorMat =          make_diffuse_material!( Vec3f([1.0, 0.0, 1.0]), 0.0f );

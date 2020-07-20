@@ -47,7 +47,7 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
                 const Material* mat = scene.primitives[hit.primId].material;
 
                 if(explicit_light_sampling && !mat.bsdf.is_specular) {
-                    Light light = scene.pickRandomLight();
+                    const Light light = scene.pickRandomLight();
                     float pdf_light_source = 1.0 / scene.lights.length;
 
                     final switch(light.type) {

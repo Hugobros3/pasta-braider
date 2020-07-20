@@ -8,6 +8,7 @@ import vector;
 class Scene(PrimitiveType) 
     if(__traits(compiles, PrimitiveType.intersect))
 {
+    Material[] materials;
     PrimitiveType[] primitives;
     Light[] lights;
 
@@ -53,7 +54,7 @@ class Scene(PrimitiveType)
         }
     }
 
-    final @nogc Light pickRandomLight() const {
+    final @nogc const(Light) pickRandomLight() const {
         return lights[uniform_range(0, cast(int)lights.length)];
     }
 }
