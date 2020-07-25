@@ -12,7 +12,7 @@ auto make_debug_renderer(ColorSpace, PrimitiveType)() {
         Hit hit = scene.intersect(ray);
 
         if(hit.primId != -1) {
-            const Material* mat = scene.primitives[hit.primId].material;
+            const MaterialRef mat = scene.primitives[hit.primId].material;
 
             const Vec3f hitPoint = ray.origin + ray.direction * hit.t;
             const Vec3f normal = scene.primitives[hit.primId].normal(hitPoint);

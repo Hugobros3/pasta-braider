@@ -24,7 +24,9 @@ struct Camera {
 
     Ray ray = {
         origin: camera.position,
-        direction: rayDirection
+        tmin: 0.0,
+        direction: rayDirection,
+        tmax: float.max,
     };
     return ray;
 }

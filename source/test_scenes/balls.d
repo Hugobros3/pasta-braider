@@ -38,7 +38,7 @@ Scene!Sphere make_balls_scene() {
     };
     scene.lights ~= skyLight;
 
-    scene.preProcessLights();
+    scene.process();
 
     return scene;
 }

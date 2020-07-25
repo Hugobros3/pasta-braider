@@ -101,7 +101,7 @@ Scene!Triangle load_tri_scene(string filename) {
 					default: if(emissionColor.length() == 0.0)
 						return cast(const(Material))make_diffuse_material(diffuseColor, 0.0f);
 					else
-						return cast(const(Material))make_diffuse_material(emissionColor, 100.0f);
+						return cast(const(Material))make_diffuse_material(emissionColor, 1.0f);
 				}
 			}
 			const Material material = pick();
@@ -173,9 +173,9 @@ Scene!Triangle load_tri_scene(string filename) {
 	type: LightType.SKY,
 	sky: SkyLight(skyMaterial)
     };
-    scene.lights ~= skyLight;
+    //scene.lights ~= skyLight;
 
-    scene.preProcessLights();
+    scene.process();
 
     return scene;
 }

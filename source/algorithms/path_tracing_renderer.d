@@ -55,7 +55,7 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
                             // Sampling the sky is done by picking a random direction, as the sky encloses the entire scene
                             auto sky_sample = sample_direction_sphere_uniform(Vec2f([uniform_rng(), uniform_rng()]));
 
-                            Ray rayToSky = { hitPoint + sky_sample.direction * 0.01, sky_sample.direction};
+                            Ray rayToSky = { hitPoint, 0.001, sky_sample.direction, float.infinity};
 
                             Hit lightConnection = scene.intersect(rayToSky);
                             if(lightConnection.primId == -1) {
@@ -72,14 +72,15 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
                         
                             // Point a ray towards it
                             Vec3f dirToLight = (lightSamplePos - hitPoint).normalize();
-                            Ray rayToLight = { hitPoint + hitNormal * 0.0001, dirToLight };
                             float distanceToLight = (lightSamplePos - hitPoint).length();
                             float d2 = distanceToLight * distanceToLight;
                             float inv_d2 = 1.0 / d2;
 
+                            Ray rayToLight = { hitPoint, 0.01, dirToLight, distanceToLight - 0.01 };
+
                             // TODO provide tMin/tMax in intersect to begin with
                             Hit lightConnection = scene.intersect(rayToLight);
-                            if(lightConnection.primId == light.primitive.index && lightConnection.t <= distanceToLight + 0.1) {
+                            if(lightConnection.primId == -1) {
                                 float pdf_point_on_light = pdf_light_source * pdf_surface;
 
                                 float cos_e = max(0.0, dot(hitNormal,       dirToLight));
@@ -121,7 +122,7 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
 
                 const auto bsdfSample = mat.bsdf.sample(-ray.direction, hitNormal);
 
-                Ray bounceRay = { hitPoint + bsdfSample.direction * 0.01, bsdfSample.direction};
+                Ray bounceRay = { hitPoint, 0.001, bsdfSample.direction, float.infinity};
                 ray = bounceRay;
 
                 weight = weight * bsdfSample.value * (dot(hitNormal, ray.direction) / bsdfSample.pdf);

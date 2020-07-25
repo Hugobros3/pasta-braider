@@ -30,7 +30,7 @@ import cornell_balls;
 import bindbc.sdl;
 
 class Window(PrimitiveType) : Film!(RGB) {
-    private Vec2i _size = [768, 768];
+    private Vec2i _size = [512, 512];
     private RGB[] _pixels;
 
     private Scene!PrimitiveType scene;
