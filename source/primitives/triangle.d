@@ -11,10 +11,10 @@ import std.math : abs;
 struct Triangle {
     const Vec3f v0, v1, v2;
     const Vec3f _normal, e1, e2;
-    const Material* material;
+    const MaterialRef material;
     immutable float invArea;
 
-    this(Vec3f v0, Vec3f v1, Vec3f v2, const Material* material) {
+    /*this(Vec3f v0, Vec3f v1, Vec3f v2, const ref Material material) {
         this.v0 = v0;
         this.v1 = v1;
         this.v2 = v2;
@@ -23,16 +23,16 @@ struct Triangle {
         this._normal = cross(-e1, e2);
         this.material = material;
         this.invArea = 1.0 / area();
-	}
+	}*/
 	
-	this(Vec3f v0, Vec3f v1, Vec3f v2, Vec3f n, const Material* material) {
+	this(Vec3f v0, Vec3f v1, Vec3f v2, Vec3f n, const ref Material material) {
         this.v0 = v0;
         this.v1 = v1;
         this.v2 = v2;
         this.e1 = v1 - v0;
         this.e2 = v2 - v0;
         this._normal = n;
-        this.material = material;
+        this.material = material.reference();
         this.invArea = 1.0 / area();
 	}
 

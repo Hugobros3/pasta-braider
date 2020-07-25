@@ -9,7 +9,13 @@ import constants;
 struct Sphere {
     Vec3f center;
     float radius;
-    const Material* material;
+    const MaterialRef material;
+
+    this(Vec3f c, float r, ref Material material) {
+        this.center = c;
+        this.radius = r;
+        this.material = material.reference();
+	}
 
     @nogc bool intersect(const ref Ray ray, ref float t) const {
         const auto oc = (ray.origin - center);//.normalize();

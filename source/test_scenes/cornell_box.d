@@ -107,7 +107,7 @@ Scene!Triangle make_cornell_box_scene() {
 				Vec3f n2 = load_normal(face.mIndices[2]);
 				Vec3f n = (n0 + n1 + n2) * (1.0 / 3.0);
 
-				Triangle tri = Triangle(v0, v1, v2, n, mptr);
+				Triangle tri = Triangle(v0, v1, v2, n, *mptr);
 
 				scene.primitives ~= tri;
 			}

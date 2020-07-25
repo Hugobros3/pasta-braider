@@ -7,6 +7,12 @@ struct Material {
     BSDF bsdf;
 }
 
+MaterialRef reference(const ref Material material) {
+    return cast(MaterialRef)&material;
+}
+
+alias MaterialRef = Material*;
+
 Material make_diffuse_material(immutable Vec3f albedo, float emission)() {
     return Material(albedo, emission, make_diffuse_bsdf!(albedo));
 }
