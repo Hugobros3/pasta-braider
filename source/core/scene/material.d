@@ -19,10 +19,10 @@ const(MaterialRef) reference(const ref Material material) {
     return cast(Material)material;
 }
 
-Material make_diffuse_material(immutable Vec3f albedo, float emission)() {
-    return new Material(albedo, emission, make_diffuse_bsdf!(albedo));
+Material make_diffuse_material(Vec3f albedo, float emission) {
+    return new Material(albedo, emission, make_diffuse_bsdf(albedo));
 }
 
-Material make_mirror_material(immutable Vec3f albedo)() {
-    return new Material(albedo, 0.0f, make_mirror_bsdf!(albedo));
+Material make_mirror_material(Vec3f albedo) {
+    return new Material(albedo, 0.0f, make_mirror_bsdf(albedo));
 }

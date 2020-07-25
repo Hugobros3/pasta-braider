@@ -43,7 +43,7 @@ final class DiffuseBSDF : BSDF {
     };
 }
 
-BSDF make_diffuse_bsdf(immutable Vec3f albedo)() {
+BSDF make_diffuse_bsdf(Vec3f albedo) {
     // TODO this is called a bsdf but all those functions assume we are in the upper hemisphere for pdfs
     // to be more correct we'd need to check for that and return a pdf of 0.0 when in the "lower" (refraction) hemi
     return new DiffuseBSDF(albedo);
@@ -71,6 +71,6 @@ final class MirrorBSDF : BSDF {
     };
 }
 
-BSDF make_mirror_bsdf(immutable Vec3f albedo)() {
+BSDF make_mirror_bsdf(Vec3f albedo) {
     return new MirrorBSDF(albedo);
 };

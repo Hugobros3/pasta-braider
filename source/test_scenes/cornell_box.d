@@ -13,17 +13,17 @@ private {
 }
 
 Scene!Triangle make_cornell_box_scene() {
-    Material emmissiveMat =      make_diffuse_material!( Vec3f([1.0, 1.0, 1.0]), 100.0f );
+    Material emmissiveMat =      make_diffuse_material( Vec3f([1.0, 1.0, 1.0]), 100.0f );
 
-    Material errorMat =          make_diffuse_material!( Vec3f([1.0, 0.0, 1.0]), 0.0f );
+    Material errorMat =          make_diffuse_material( Vec3f([1.0, 0.0, 1.0]), 0.0f );
 
-    Material diffuseGreyMat =    make_diffuse_material!( Vec3f([0.8, 0.8, 0.8]), 0.0f );
-    Material diffuseRedMat =     make_diffuse_material!( Vec3f([1.0, 0.0, 0.0]), 0.0f );
-    Material diffuseGreenMat =   make_diffuse_material!( Vec3f([0.0, 1.0, 0.0]), 0.0f );
+    Material diffuseGreyMat =    make_diffuse_material( Vec3f([0.8, 0.8, 0.8]), 0.0f );
+    Material diffuseRedMat =     make_diffuse_material( Vec3f([1.0, 0.0, 0.0]), 0.0f );
+    Material diffuseGreenMat =   make_diffuse_material( Vec3f([0.0, 1.0, 0.0]), 0.0f );
 
-    Material skyMaterial =       make_diffuse_material!( Vec3f([0.0f, 0.05f, 0.15f]), 0.5f ); 
+    Material skyMaterial =       make_diffuse_material( Vec3f([0.0f, 0.05f, 0.15f]), 0.5f ); 
 
-    Material mirrorMat =         make_mirror_material!( Vec3f([1.0, 1.0, 1.0]));
+    Material mirrorMat =         make_mirror_material( Vec3f([1.0, 1.0, 1.0]));
 
 	import std.string;
 	import std.conv;
@@ -47,36 +47,56 @@ Scene!Triangle make_cornell_box_scene() {
 		writeln(matrix);
 		
 		for(int m = 0; m < node.mNumMeshes; m++) {
-			const aiMesh* mesh = aiScene.mMeshes[node.mMeshes[m]];
-			const aiMaterial* material = aiScene.mMaterials[mesh.mMaterialIndex];
+			const aiMesh* aiMesh = aiScene.mMeshes[node.mMeshes[m]];
+			const aiMaterial* aiMaterial = aiScene.mMaterials[aiMesh.mMaterialIndex];
 
 			//const aiMaterialProperty* prop;
 			//aiGetMaterialProperty(material, toStringz("?mat.name"), 0, 0, &prop);
 			aiString prop;
-			aiGetMaterialString(material, toStringz("?mat.name"), 0, 0, &prop);
+			aiGetMaterialString(aiMaterial, toStringz("?mat.name"), 0, 0, &prop);
 			string mat_string = prop.data[0 .. prop.length].idup;
 
-			const(Material*) pick() {
+			//float[3] diffuseColor;
+			//uint diffuseLength = 3;
+			//aiGetMaterialFloatArray(aiMaterial, toStringz("$clr.diffuse"), 0, 0, &diffuseColor[0], &diffuseLength);
+			//writeln("material color: ", diffuseColor[0 .. diffuseLength], "l=", diffuseLength);
+
+			aiColor4D aiDiffuseColor;
+			aiGetMaterialColor(aiMaterial, toStringz("$clr.diffuse"), 0, 0, &aiDiffuseColor);
+			Vec3f diffuseColor = Vec3f([aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b]);
+			writeln("material color: ", diffuseColor);
+
+			aiColor4D aiEmissionColor;
+			aiGetMaterialColor(aiMaterial, toStringz("$clr.emissive"), 0, 0, &aiEmissionColor);
+			Vec3f emissionColor = Vec3f([aiEmissionColor.r, aiEmissionColor.g, aiEmissionColor.b]);
+			writeln("emission color: ", emissionColor);
+
+			const(Material) pick() {
 				switch(mat_string) {
-					case "grey": return &diffuseGreyMat;
+					case "mirror": return mirrorMat;
+					/*case "grey": return &diffuseGreyMat;
 					case "red": return &diffuseRedMat;
 					case "green": return &diffuseGreenMat;
 					case "light": return &emmissiveMat;
-					case "mirror": return &mirrorMat;
-						default: return &errorMat;
+						default: return &errorMat;*/
+						default: if(emissionColor.length() == 0.0)
+									return cast(const(Material))make_diffuse_material(diffuseColor, 0.0f);
+								 else
+									return cast(const(Material))make_diffuse_material(emissionColor, 100.0f);
 				}
 			}
+			const Material material = pick();
 
 			writeln("material name: ", mat_string);
-			const Material* mptr = pick();
+			writeln("material: ", material.bsdf, material.emission);
 
-			printf("vertices: %d \n", mesh.mNumVertices);
-			for(int f = 0; f < mesh.mNumFaces; f++) {
-				const aiFace face = mesh.mFaces[f];
+			printf("vertices: %d \n", aiMesh.mNumVertices);
+			for(int f = 0; f < aiMesh.mNumFaces; f++) {
+				const aiFace face = aiMesh.mFaces[f];
 				assert(3 == face.mNumIndices);
 
 				Vec3f load_vertex(uint indice) {
-					const aiVector3D vec = mesh.mVertices[indice];
+					const aiVector3D vec = aiMesh.mVertices[indice];
 					Vec4f vtx = [ vec.x, vec.y, vec.z, 1.0f ];
 					Vec4f transformedVtx = matrix * vtx;
 					//writeln(vtx);
@@ -88,7 +108,7 @@ Scene!Triangle make_cornell_box_scene() {
 				}
 				
 				Vec3f load_normal(uint indice) {
-					const aiVector3D vec = mesh.mNormals[indice];
+					const aiVector3D vec = aiMesh.mNormals[indice];
 					Vec4f vtx = [ vec.x, vec.y, vec.z, 0.0f ];
 					Vec4f transformedVtx = matrix * vtx;
 					//writeln(vtx);
@@ -108,7 +128,7 @@ Scene!Triangle make_cornell_box_scene() {
 				Vec3f n2 = load_normal(face.mIndices[2]);
 				Vec3f n = (n0 + n1 + n2) * (1.0 / 3.0);
 
-				Triangle tri = Triangle(v0, v1, v2, n, *mptr);
+				Triangle tri = Triangle(v0, v1, v2, n, material);
 
 				scene.primitives ~= tri;
 			}

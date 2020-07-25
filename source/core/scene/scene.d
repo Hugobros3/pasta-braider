@@ -12,7 +12,7 @@ class Scene(PrimitiveType)
     PrimitiveType[] primitives;
     Light[] lights;
 
-    SkyLight skyLight = { make_diffuse_material!(Vec3f(0.0f), 0.0f) };
+    SkyLight skyLight = { make_diffuse_material(Vec3f(0.0f), 0.0f) };
 
     final @nogc Hit intersect(Ray ray) const {
         float t;

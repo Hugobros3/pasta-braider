@@ -72,14 +72,14 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
                         
                             // Point a ray towards it
                             Vec3f dirToLight = (lightSamplePos - hitPoint).normalize();
-                            Ray rayToLight = { hitPoint + dirToLight * 0.01, dirToLight };
+                            Ray rayToLight = { hitPoint + hitNormal * 0.0001, dirToLight };
                             float distanceToLight = (lightSamplePos - hitPoint).length();
                             float d2 = distanceToLight * distanceToLight;
                             float inv_d2 = 1.0 / d2;
 
                             // TODO provide tMin/tMax in intersect to begin with
                             Hit lightConnection = scene.intersect(rayToLight);
-                            if(lightConnection.primId == light.primitive.index && lightConnection.t <= distanceToLight + 0.001) {
+                            if(lightConnection.primId == light.primitive.index && lightConnection.t <= distanceToLight + 0.1) {
                                 float pdf_point_on_light = pdf_light_source * pdf_surface;
 
                                 float cos_e = max(0.0, dot(hitNormal,       dirToLight));

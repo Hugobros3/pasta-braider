@@ -9,15 +9,15 @@ private {
 }
 
 Scene!Sphere make_balls_scene() {
-    Material emmissiveMat =      make_diffuse_material!( Vec3f([1.0, 0.5, 0.0]), 10.0f );
-    Material veryEmmissiveMat =  make_diffuse_material!( Vec3f([1.0, 0.0, 1.0]), 2.0f );
-    Material veryEmmissiveMat2 = make_diffuse_material!( Vec3f([0.0, 1.0, 0.0]), 2.0f );
+    Material emmissiveMat =      make_diffuse_material( Vec3f([1.0, 0.5, 0.0]), 10.0f );
+    Material veryEmmissiveMat =  make_diffuse_material( Vec3f([1.0, 0.0, 1.0]), 2.0f );
+    Material veryEmmissiveMat2 = make_diffuse_material( Vec3f([0.0, 1.0, 0.0]), 2.0f );
 
-    Material diffuseRedMat =     make_diffuse_material!( Vec3f([1.0, 0.0, 0.0]), 0.0f );
-    Material diffuseGreyMat =    make_diffuse_material!( Vec3f([0.8, 0.8, 0.8]), 0.0f );
-    Material skyMaterial =       make_diffuse_material!( Vec3f([0.0f, 0.05f, 0.15f]), 0.5f);
+    Material diffuseRedMat =     make_diffuse_material( Vec3f([1.0, 0.0, 0.0]), 0.0f );
+    Material diffuseGreyMat =    make_diffuse_material( Vec3f([0.8, 0.8, 0.8]), 0.0f );
+    Material skyMaterial =       make_diffuse_material( Vec3f([0.0f, 0.05f, 0.15f]), 0.5f);
 
-    Material mirrorMat =         make_mirror_material!( Vec3f([1.0, 1.0, 1.0]));
+    Material mirrorMat =         make_mirror_material( Vec3f([1.0, 1.0, 1.0]));
 
     auto scene = new Scene!Sphere();
 
