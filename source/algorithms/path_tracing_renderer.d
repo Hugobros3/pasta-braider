@@ -44,7 +44,7 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
             if(hit.primId != -1) {
                 Vec3f hitPoint = ray.origin + ray.direction * hit.t;
                 Vec3f hitNormal = scene.primitives[hit.primId].normal(hitPoint);
-                const Material* mat = scene.primitives[hit.primId].material;
+                const MaterialRef mat = scene.primitives[hit.primId].material;
 
                 if(explicit_light_sampling && !mat.bsdf.is_specular) {
                     const Light light = scene.pickRandomLight();
@@ -85,7 +85,7 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
                                 float cos_e = max(0.0, dot(hitNormal,       dirToLight));
                                 float cos_l = max(0.0, dot(lightSampleNorm, -dirToLight));
 
-                                const Material* lightMat = scene.primitives[light.primitive.index].material;
+                                const MaterialRef lightMat = scene.primitives[light.primitive.index].material;
 
                                 //float pdf_e = mat.bsdf.pdf(ray.direction, hitNormal, rayToLight.direction);
                                 //float mis = 1.0f / (1.0 + pdf_e * cos_l * inv_d2 / pdf_point_on_light);

@@ -6,7 +6,12 @@ import vector;
 import light;
 
 private { 
-    Material emmissiveMat =      make_diffuse_material!( Vec3f([1.0, 1.0, 1.0]), 100.0f );
+
+}
+
+Scene!Sphere make_cornell_balls_scene() {    
+	
+	Material emmissiveMat =      make_diffuse_material!( Vec3f([1.0, 1.0, 1.0]), 100.0f );
 
     Material diffuseGreyMat =    make_diffuse_material!( Vec3f([0.8, 0.8, 0.8]), 0.0f );
     Material diffuseRedMat =     make_diffuse_material!( Vec3f([1.0, 0.0, 0.0]), 0.0f );
@@ -15,9 +20,7 @@ private {
     Material skyMaterial =       make_diffuse_material!( Vec3f([0.0f, 0.005f, 0.015f]), 0.0f ); 
 
     Material mirrorMat =         make_mirror_material!( Vec3f([1.0, 1.0, 1.0]));
-}
 
-Scene!Sphere make_cornell_balls_scene() {
     auto scene = new Scene!Sphere();
 
     // walls

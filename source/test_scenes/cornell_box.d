@@ -10,6 +10,9 @@ import std.stdio;
 import bindbc.assimp;
 
 private { 
+}
+
+Scene!Triangle make_cornell_box_scene() {
     Material emmissiveMat =      make_diffuse_material!( Vec3f([1.0, 1.0, 1.0]), 100.0f );
 
     Material errorMat =          make_diffuse_material!( Vec3f([1.0, 0.0, 1.0]), 0.0f );
@@ -21,9 +24,7 @@ private {
     Material skyMaterial =       make_diffuse_material!( Vec3f([0.0f, 0.05f, 0.15f]), 0.5f ); 
 
     Material mirrorMat =         make_mirror_material!( Vec3f([1.0, 1.0, 1.0]));
-}
 
-Scene!Triangle make_cornell_box_scene() {
 	import std.string;
 	import std.conv;
 

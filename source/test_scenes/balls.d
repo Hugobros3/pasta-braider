@@ -6,6 +6,9 @@ import vector;
 import light;
 
 private { 
+}
+
+Scene!Sphere make_balls_scene() {
     Material emmissiveMat =      make_diffuse_material!( Vec3f([1.0, 0.5, 0.0]), 10.0f );
     Material veryEmmissiveMat =  make_diffuse_material!( Vec3f([1.0, 0.0, 1.0]), 2.0f );
     Material veryEmmissiveMat2 = make_diffuse_material!( Vec3f([0.0, 1.0, 0.0]), 2.0f );
@@ -15,9 +18,7 @@ private {
     Material skyMaterial =       make_diffuse_material!( Vec3f([0.0f, 0.05f, 0.15f]), 0.5f);
 
     Material mirrorMat =         make_mirror_material!( Vec3f([1.0, 1.0, 1.0]));
-}
 
-Scene!Sphere make_balls_scene() {
     auto scene = new Scene!Sphere();
 
     scene.primitives ~= Sphere(Vec3f([10.0, -100.0, 0.0]), 98.5f, diffuseGreyMat);
