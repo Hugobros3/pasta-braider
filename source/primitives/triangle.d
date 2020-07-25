@@ -1,6 +1,7 @@
 import vector;
 import ray;
 import material;
+import bbox;
 
 import uniform_sampling;
 import fast_math;
@@ -9,10 +10,10 @@ import constants;
 import std.math : abs;
 
 struct Triangle {
-    const Vec3f v0, v1, v2;
-    const Vec3f _normal, e1, e2;
-    const MaterialRef material;
-    immutable float invArea;
+    Vec3f v0, v1, v2;
+    Vec3f _normal, e1, e2;
+    MaterialRef material;
+    float invArea;
 
     /*this(Vec3f v0, Vec3f v1, Vec3f v2, const ref Material material) {
         this.v0 = v0;
@@ -25,7 +26,7 @@ struct Triangle {
         this.invArea = 1.0 / area();
 	}*/
 	
-	this(Vec3f v0, Vec3f v1, Vec3f v2, Vec3f n, const ref Material material) {
+	this(Vec3f v0, Vec3f v1, Vec3f v2, Vec3f n, ref Material material) {
         this.v0 = v0;
         this.v1 = v1;
         this.v2 = v2;
@@ -83,5 +84,17 @@ struct Triangle {
 
     @nogc float area() const {
         return (cross(v0, v1) + cross(v1, v2) + cross(v2, v0)).length / 2.0f;
+	}
+
+    @nogc BBox3f bbox() const {
+        BBox3f bbox = v0;
+        bbox = bbox.expand(v0);
+        bbox = bbox.expand(v1);
+		bbox = bbox.expand(v2);
+        return bbox;
+    }
+
+    @nogc Vec3f center() const {
+        return (v0 + v1 + v2) * (1.0 / 3.0);
 	}
 }

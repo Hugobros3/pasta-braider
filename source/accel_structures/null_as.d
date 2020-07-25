@@ -1,18 +1,19 @@
 import ray;
+import scene;
 
 struct NullAS(PrimitiveType)
     if(__traits(compiles, PrimitiveType.intersect))
 {
-	PrimitiveType[] primitives;
+	Scene!PrimitiveType scene;
 
-	this(PrimitiveType[] primitives) {
-		this.primitives = primitives;
+	this(Scene!PrimitiveType scene) {
+		this.scene = scene;
 	}
 
 	final @nogc Hit intersect(Ray ray) const {
 		float t;
 		Hit hit;
-		foreach(primId, primitive; primitives) {
+		foreach(primId, primitive; scene.primitives) {
 			//t = ray.tmin;
 			if(primitive.intersect(ray, t)) {
 				if(ray.tmin <= t && t < ray.tmax) {
@@ -23,5 +24,9 @@ struct NullAS(PrimitiveType)
 			}
 		}
 		return hit;
+	}
+
+	void build() {
+
 	}
 }

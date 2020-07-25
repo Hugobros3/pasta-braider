@@ -6,6 +6,7 @@ import std.array;
 import std.range;
 import std.stdio;
 import std.encoding;
+import std.algorithm.comparison : smax = max, smin = min;
 
 import core.simd;
 
@@ -224,6 +225,27 @@ struct Vec(int dim, T) {
     }
     return acc;
     //return (lhs * rhs).data.fold!((T acc, T value) => acc + value);
+}
+
+/// max
+@nogc pure Vec!(dim, T) max(int dim, T)(const Vec!(dim, T) lhs, const Vec!(dim, T) rhs) {
+    Vec!(dim, T) target;
+    static foreach(i; 0 .. dim) {
+        {
+        float l = lhs.data[i];
+        float r = rhs.data[i];
+        target.data[i] = smax(l, r);
+        }
+    }
+    return target;
+}
+/// min
+@nogc pure Vec!(dim, T) min(int dim, T)(const Vec!(dim, T) lhs, const Vec!(dim, T) rhs) {
+    Vec!(dim, T) target;
+    static foreach(i; 0 .. dim) {
+        target.data[i] = smin(lhs.data[i], rhs.data[i]);
+    }
+    return target;
 }
 
 /// Cross product (3d specialized version)

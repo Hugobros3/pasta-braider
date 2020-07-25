@@ -1,6 +1,7 @@
 import vector;
 import ray;
 import material;
+import bbox;
 
 import uniform_sampling;
 import fast_math;
@@ -9,7 +10,7 @@ import constants;
 struct Sphere {
     Vec3f center;
     float radius;
-    const MaterialRef material;
+    MaterialRef material;
 
     this(Vec3f c, float r, ref Material material) {
         this.center = c;
@@ -51,6 +52,13 @@ struct Sphere {
 
     @nogc Vec3f normal(const ref Vec3f p) const {
         return (p - center) * (1.0 / radius);
+    }
+
+    @nogc BBox3f bbox() const {
+        BBox3f bbox = center;
+        bbox.pmax = bbox.pmax + Vec3f(radius / 2);
+        bbox.pmin = bbox.pmin - Vec3f(radius / 2);
+        return bbox;
     }
 
     @nogc void random_point_on_surface(ref Vec3f position, ref Vec3f normal, ref float pdf) const {

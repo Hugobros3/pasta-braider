@@ -5,9 +5,10 @@ import light;
 import material;
 import vector;
 
+import bvh;
 import null_as;
 
-alias AS = NullAS;
+alias AS = Bvh;
 
 class Scene(PrimitiveType) 
     if(__traits(compiles, PrimitiveType.intersect))
@@ -15,7 +16,11 @@ class Scene(PrimitiveType)
     Material[] materials;
     PrimitiveType[] primitives;
     Light[] lights;
-    AS!PrimitiveType acceleration_structure = AS!PrimitiveType([]);
+    AS!PrimitiveType acceleration_structure;
+
+    this() {
+        acceleration_structure = AS!PrimitiveType(this);
+	}
 
     SkyLight skyLight = { make_diffuse_material(Vec3f(0.0f), 0.0f) };
 
@@ -27,7 +32,7 @@ class Scene(PrimitiveType)
     void process() {
         addEmmissivePrimitives();
         findSkyLight();
-        acceleration_structure = AS!PrimitiveType(primitives);
+        acceleration_structure.build();
     }
 
     private void addEmmissivePrimitives() {

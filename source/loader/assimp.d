@@ -32,15 +32,7 @@ void load_assimp() {
 }
 
 Scene!Triangle load_tri_scene(string filename) {
-    Material emmissiveMat =      make_diffuse_material( Vec3f([1.0, 1.0, 1.0]), 100.0f );
-
-    Material errorMat =          make_diffuse_material( Vec3f([1.0, 0.0, 1.0]), 0.0f );
-
-    Material diffuseGreyMat =    make_diffuse_material( Vec3f([0.8, 0.8, 0.8]), 0.0f );
-    Material diffuseRedMat =     make_diffuse_material( Vec3f([1.0, 0.0, 0.0]), 0.0f );
-    Material diffuseGreenMat =   make_diffuse_material( Vec3f([0.0, 1.0, 0.0]), 0.0f );
-
-    Material skyMaterial =       make_diffuse_material( Vec3f([0.0f, 0.05f, 0.15f]), 0.5f ); 
+    Material skyMaterial =       make_diffuse_material( Vec3f([0.0f, 0.05f, 0.15f]), 0.15f ); 
 
     Material mirrorMat =         make_mirror_material( Vec3f([1.0, 1.0, 1.0]));
 
@@ -90,7 +82,7 @@ Scene!Triangle load_tri_scene(string filename) {
 			Vec3f emissionColor = Vec3f([aiEmissionColor.r, aiEmissionColor.g, aiEmissionColor.b]);
 			writeln("emission color: ", emissionColor);
 
-			const(Material) pick() {
+			Material pick() {
 				switch(mat_string) {
 					case "mirror": return mirrorMat;
 						/*case "grey": return &diffuseGreyMat;
@@ -99,12 +91,12 @@ Scene!Triangle load_tri_scene(string filename) {
 						case "light": return &emmissiveMat;
 						default: return &errorMat;*/
 					default: if(emissionColor.length() == 0.0)
-						return cast(const(Material))make_diffuse_material(diffuseColor, 0.0f);
+						return make_diffuse_material(diffuseColor, 0.0f);
 					else
-						return cast(const(Material))make_diffuse_material(emissionColor, 1.0f);
+						return make_diffuse_material(emissionColor, 1.0f);
 				}
 			}
-			const Material material = pick();
+			Material material = pick();
 
 			writeln("material name: ", mat_string);
 			writeln("material: ", material.bsdf, material.emission);
@@ -167,13 +159,11 @@ Scene!Triangle load_tri_scene(string filename) {
 	]; 
 	visitNode(aiScene.mRootNode, base_matrix);
 
-    //scene.primitives ~= Sphere(Vec3f([10.0, -1000.0, 0.0]), 990.0f, &diffuseGreyMat);
-
 	Light skyLight = {
 	type: LightType.SKY,
 	sky: SkyLight(skyMaterial)
     };
-    //scene.lights ~= skyLight;
+    scene.lights ~= skyLight;
 
     scene.process();
 

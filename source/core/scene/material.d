@@ -15,7 +15,7 @@ class Material {
 
 alias MaterialRef = Material;
 
-const(MaterialRef) reference(const ref Material material) {
+MaterialRef reference(const ref Material material) {
     return cast(Material)material;
 }
 
