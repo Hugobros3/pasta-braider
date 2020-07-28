@@ -37,6 +37,7 @@ struct Triangle {
         this.invArea = 1.0 / area();
 	}
 
+    pragma(inline, true)
     @nogc bool intersect(const ref Ray ray, ref float t) const {
         Vec3f p = cross(ray.direction, e2);
         float determinant = dot(e1, p);
@@ -63,10 +64,12 @@ struct Triangle {
         return false;
 	}
 
+    pragma(inline, true)
     @nogc Vec3f normal(const ref Vec3f p) const {
         return _normal;
     }
 
+    pragma(inline, true)
     @nogc void random_point_on_surface(ref Vec3f position, ref Vec3f normal, ref float pdf) const {
         const float r1 = uniform_rng();
         const float r2 = uniform_rng();
@@ -82,10 +85,12 @@ struct Triangle {
         pdf = invArea;
 	}
 
+    pragma(inline, true)
     @nogc float area() const {
         return (cross(v0, v1) + cross(v1, v2) + cross(v2, v0)).length / 2.0f;
 	}
 
+    pragma(inline, true)
     @nogc BBox3f bbox() const {
         BBox3f bbox = v0;
         bbox = bbox.expand(v0);
@@ -94,6 +99,7 @@ struct Triangle {
         return bbox;
     }
 
+    pragma(inline, true)
     @nogc Vec3f center() const {
         return (v0 + v1 + v2) * (1.0 / 3.0);
 	}

@@ -43,6 +43,7 @@ struct Bvh(PrimitiveType)
 		this.scene = scene;
 	}
 
+    pragma(inline, true)
 	final @nogc Hit intersect(Ray ray) const {
 		Vec3f inv_ray = Vec3f(1.0) / ray.direction;
 
@@ -92,7 +93,7 @@ struct Bvh(PrimitiveType)
 			int best_axis = -1;
 			int best_place = -1;
 
-			writeln(primitives_ids);
+			//writeln(primitives_ids);
 
 			uint[][3] sorted_prims;
 			foreach(axis; [0, 1, 2]) {
@@ -116,7 +117,7 @@ struct Bvh(PrimitiveType)
 					float right_area = bbox.area();
 					//bbox = bbox.expand( sorted_prims[axis][index].bbox());
 					float cost = sah_cost_inner(cast(int)index, left_area[index], cast(int)(primitives_ids.length - index), right_area);
-					writeln(index, " ", cost);
+					//writeln(index, " ", cost);
 					if(cost < best_cost) {
 						best_cost = cost;
 						best_axis = axis;
@@ -125,17 +126,17 @@ struct Bvh(PrimitiveType)
 				}
 			}
 
-			writeln("leaf_cost", leaf_cost);
+			/*writeln("leaf_cost", leaf_cost);
 			writeln("best_axis", best_axis);
 			writeln("best_place", best_place);
-			writeln("best_cost", best_cost);
+			writeln("best_cost", best_cost);*/
 
 			if (best_axis == -1) {
 				int nodeid = cast(int)nodes.length;
 				LeafNode ln = {prims: primitives_ids};
 				Node node = { is_leaf: true, leaf: ln };
 				nodes ~= node;
-				writeln("wrote leaf node", nodeid, "#prims", ln.prims.length);
+				//writeln("wrote leaf node", nodeid, "#prims", ln.prims.length);
 				return nodeid;
 			} else {
 				uint[] left = sorted_prims[best_axis][0 .. best_place];
@@ -143,8 +144,8 @@ struct Bvh(PrimitiveType)
 
 				BBox3f left_bbox = primitives[left[0]].center;
 				foreach(prim_id; left) {
-					writeln(left_bbox, " + ", primitives[prim_id].bbox(),  " => ", left_bbox.area());
-					writeln(primitives[prim_id]);
+					//writeln(left_bbox, " + ", primitives[prim_id].bbox(),  " => ", left_bbox.area());
+					//writeln(primitives[prim_id]);
 					left_bbox = left_bbox.expand(primitives[prim_id].bbox());
 				}
 
@@ -153,9 +154,9 @@ struct Bvh(PrimitiveType)
 					right_bbox = right_bbox.expand(primitives[prim_id].bbox());
 				}
 
-				writeln("left ", left.length, " right ", right.length);
+				/*writeln("left ", left.length, " right ", right.length);
 				writeln("left area ", left_bbox.area(), " right area ", right_bbox.area());
-				writeln("recomputed cost", sah_cost_inner(cast(int)left.length, left_bbox.area(), cast(int)(right.length), right_bbox.area()));
+				writeln("recomputed cost", sah_cost_inner(cast(int)left.length, left_bbox.area(), cast(int)(right.length), right_bbox.area()));*/
 
 				NodeId left_node = build_tree(primitives, left, left_bbox.area());
 				NodeId right_node = build_tree(primitives, right, right_bbox.area());
@@ -165,7 +166,7 @@ struct Bvh(PrimitiveType)
 				child_ids: [left_node, right_node]};
 				Node node = { is_leaf: false, inner: inn };
 				nodes ~= node;
-				writeln("wrote inner node", nodeid);
+				//writeln("wrote inner node", nodeid);
 				return nodeid;
 			}
 		}

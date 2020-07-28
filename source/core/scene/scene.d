@@ -24,6 +24,7 @@ class Scene(PrimitiveType)
 
     SkyLight skyLight = { make_diffuse_material(Vec3f(0.0f), 0.0f) };
 
+    pragma(inline, true)
     final @nogc Hit intersect(Ray ray) const {
         return acceleration_structure.intersect(ray);
     }
@@ -55,6 +56,7 @@ class Scene(PrimitiveType)
         }
     }
 
+    pragma(inline, true)
     final @nogc const(Light) pickRandomLight() const {
         return lights[uniform_range(0, cast(int)lights.length)];
     }

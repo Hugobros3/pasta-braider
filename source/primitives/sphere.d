@@ -56,8 +56,8 @@ struct Sphere {
 
     @nogc BBox3f bbox() const {
         BBox3f bbox = center;
-        bbox.pmax = bbox.pmax + Vec3f(radius / 2);
-        bbox.pmin = bbox.pmin - Vec3f(radius / 2);
+        bbox.pmax = bbox.pmax + Vec3f(radius);
+        bbox.pmin = bbox.pmin - Vec3f(radius);
         return bbox;
     }
 

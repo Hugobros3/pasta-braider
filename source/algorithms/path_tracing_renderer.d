@@ -115,7 +115,7 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
                     }
                 }
 
-                if(!explicit_light_sampling || last_specular || depth == 0    ) {
+                if(!explicit_light_sampling || last_specular || depth == 0) {
                     Vec3f L_e = Vec3f(mat.emission) * mat.color;
                     color = color + L_e * weight;
                 }

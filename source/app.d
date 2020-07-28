@@ -12,7 +12,7 @@ import assimp;
 void main(string[] args) {
     load_assimp();
     
-	scope auto window = new Window!Triangle(load_tri_scene("scenes/wreck.glb"));
+	scope auto window = new Window!Triangle(load_tri_scene("scenes/toy.obj"));
     //scope auto window = new Window!Sphere(make_cornell_balls_scene());
     window.run();
 }

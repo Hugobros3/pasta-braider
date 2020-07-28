@@ -211,6 +211,7 @@ struct Vec(int dim, T) {
 }
 
 /// Dot product
+pragma(inline, true)
 @nogc pure T dot(int dim, T)(const Vec!(dim, T) lhs, const Vec!(dim, T) rhs) {
     T acc = T(0);
     static if(Vec!(dim, T).is_simd) {
@@ -228,6 +229,7 @@ struct Vec(int dim, T) {
 }
 
 /// max
+pragma(inline, true)
 @nogc pure Vec!(dim, T) max(int dim, T)(const Vec!(dim, T) lhs, const Vec!(dim, T) rhs) {
     Vec!(dim, T) target;
     static foreach(i; 0 .. dim) {
@@ -240,6 +242,7 @@ struct Vec(int dim, T) {
     return target;
 }
 /// min
+pragma(inline, true)
 @nogc pure Vec!(dim, T) min(int dim, T)(const Vec!(dim, T) lhs, const Vec!(dim, T) rhs) {
     Vec!(dim, T) target;
     static foreach(i; 0 .. dim) {

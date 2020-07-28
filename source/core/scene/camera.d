@@ -10,11 +10,12 @@ struct Camera {
 
     Vec3f h, v;
     void update() {
-        v = (cross(up, lookingAt));
-        h = (cross(v, lookingAt));
+        v = (cross(up, lookingAt)).normalize();
+        h = (cross(v, lookingAt)).normalize();
     }
 }
 
+pragma(inline, true)
 @nogc Ray generateRay(immutable ref Camera camera, const Vec2i viewportSize, const Vec2f viewportPosition) {
     float aspectRation = cast(float)viewportSize.x / cast(float)viewportSize.y;
 

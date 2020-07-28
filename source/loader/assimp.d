@@ -32,7 +32,7 @@ void load_assimp() {
 }
 
 Scene!Triangle load_tri_scene(string filename) {
-    Material skyMaterial =       make_diffuse_material( Vec3f([0.0f, 0.05f, 0.15f]), 0.15f ); 
+    Material skyMaterial =       make_diffuse_material( Vec3f([0.0f, 0.05f, 0.15f]), 1.15f ); 
 
     Material mirrorMat =         make_mirror_material( Vec3f([1.0, 1.0, 1.0]));
 
