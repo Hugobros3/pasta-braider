@@ -22,7 +22,9 @@ struct Bvh(PrimitiveType)
 	}
 
 	struct LeafNode {
-		uint[] prims;
+		uint ref_start;
+		uint ref_count;
+		//uint[] prims;
 		//PrimitiveType[] prims;
 		//uint[maxPrimsPerLeaf] prim_ids;
 	}
@@ -38,6 +40,8 @@ struct Bvh(PrimitiveType)
 	Scene!PrimitiveType scene;
 	Node[] nodes;
 	NodeId root;
+
+	uint[] references;
 
 	this(Scene!PrimitiveType scene) {
 		this.scene = scene;
@@ -71,7 +75,9 @@ struct Bvh(PrimitiveType)
 
 			template traverse_node(string node_variable_name) {
 				const char[] traverse_node = "
-					foreach(prim_id; " ~ node_variable_name ~ ".leaf.prims) {
+					const LeafNode* leaf = &" ~ node_variable_name ~ ".leaf;
+					foreach(i; 0 .. leaf.ref_count) {
+						uint prim_id = references[leaf.ref_start + i];
 						if(scene.primitives[prim_id].intersect(ray, t)) {
 							if(ray.tmin <= t && t < ray.tmax) {
 								hit.primId = cast(int)prim_id;
@@ -199,9 +205,13 @@ struct Bvh(PrimitiveType)
 			writeln("best_place", best_place);
 			writeln("best_cost", best_cost);*/
 
-			if (best_axis == -1) {
+			if (best_axis == -1 || primitives_ids.length <= maxPrimsPerLeaf) {
 				int nodeid = cast(int)nodes.length;
-				LeafNode ln = {prims: primitives_ids};
+				
+				LeafNode ln = {ref_start: cast(uint)(references.length), ref_count: cast(uint)(primitives_ids.length)};
+				references ~= primitives_ids;
+				
+				//LeafNode ln = {prims: primitives_ids};
 				Node node = { is_leaf: true, leaf: ln };
 				nodes ~= node;
 				//writeln("wrote leaf node", nodeid, "#prims", ln.prims.length);
