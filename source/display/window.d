@@ -88,10 +88,10 @@ class Window(PrimitiveType) : Film!(RGB) {
             camera.lookingAt = controller.get_view_dir().normalize();
             camera.update();
 
-            //immutable @nogc auto algorithm = make_debug_renderer!(RGB, PrimitiveType);
+            immutable @nogc auto algorithm = make_debug_renderer!(RGB, PrimitiveType);
             //immutable @nogc auto algorithm = make_direct_lighting_renderer!(RGB, PrimitiveType);
             //immutable @nogc auto algorithm = make_direct_lighting_renderer_explicit_light_sampling!(RGB, PrimitiveType);
-            immutable @nogc auto algorithm = make_path_tracing_renderer!(RGB, PrimitiveType);
+            //immutable @nogc auto algorithm = make_path_tracing_renderer!(RGB, PrimitiveType);
             draw!(algorithm)(this);
 
             float invAcc = 1.0f / acc;

@@ -44,10 +44,12 @@ struct BBox(int dim, T) {
 
 alias BBox3f = BBox!(3, float);
 
+pragma(inline, true)
 @nogc float fast_multiply_add(float a, float b, float c) {
     return a * b + c;
 }
 
+pragma(inline, true)
 @nogc Tuple!(float, float) intersect(const ref BBox3f bbox, const ref Ray ray, const Vec3f ray_inv_dir) {
 	import std.algorithm.comparison;
     float txmin = fast_multiply_add(bbox.pmin.x, ray_inv_dir.x, -(ray.origin.x * ray_inv_dir.x));
