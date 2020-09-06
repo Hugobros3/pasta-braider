@@ -25,8 +25,8 @@ class Scene(PrimitiveType)
     SkyLight skyLight = { make_diffuse_material(Vec3f(0.0f), 0.0f) };
 
     pragma(inline, true)
-    final @nogc Hit intersect(Ray ray) const {
-        return acceleration_structure.intersect(ray);
+    final @nogc auto intersect(TraversalParameters params = DEFAULT_TRAVERSAL_PARAMETERS)(Ray ray) const {
+        return acceleration_structure.intersect!(params)(ray);
     }
 
     // Called when the scene is done being built

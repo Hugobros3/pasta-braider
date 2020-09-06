@@ -8,6 +8,7 @@ import std.algorithm;
 import std.math;
 import std.range;
 import std.stdio;
+import std.typecons;
 
 struct Bvh(PrimitiveType)
     if(__traits(compiles, PrimitiveType.intersect))
@@ -24,9 +25,6 @@ struct Bvh(PrimitiveType)
 	struct LeafNode {
 		uint ref_start;
 		uint ref_count;
-		//uint[] prims;
-		//PrimitiveType[] prims;
-		//uint[maxPrimsPerLeaf] prim_ids;
 	}
 
 	struct Node {
@@ -42,14 +40,18 @@ struct Bvh(PrimitiveType)
 	NodeId root;
 
 	uint[] references;
+	uint* refs_start;
 
 	this(Scene!PrimitiveType scene) {
 		this.scene = scene;
 	}
 
     pragma(inline, true)
-	final @nogc Hit intersect(Ray ray) const {
+	final @nogc auto intersect(TraversalParameters traversal_params)(Ray ray) const {
 		immutable bool eager_traversal = true;
+		static if(traversal_params.return_stats) {
+			TraversalStats traversal_stats;
+		}
 
 		Vec3f inv_ray = Vec3f(1.0) / ray.direction;
 
@@ -61,35 +63,34 @@ struct Bvh(PrimitiveType)
 		nodeid = root;
 		int stack_size = 0;
 
-		//stack[0] = root;
-		//int stack_size = 1;
-		//while(stack_size > 0) {
-		while(true) {
-			immutable auto stack_pop =
-				"if(stack_size > 0) {
-					nodeid = stack[--stack_size];
-				} else {
-					break;
-				}"
+		immutable auto stack_pop =
+			"if(stack_size > 0) {
+			nodeid = stack[--stack_size];
+			} else {
+			break;
+			}"
 			;
 
-			template traverse_node(string node_variable_name) {
-				const char[] traverse_node = "
-					const LeafNode* leaf = &" ~ node_variable_name ~ ".leaf;
-					foreach(i; 0 .. leaf.ref_count) {
-						uint prim_id = references[leaf.ref_start + i];
-						if(scene.primitives[prim_id].intersect(ray, t)) {
-							if(ray.tmin <= t && t < ray.tmax) {
-								hit.primId = cast(int)prim_id;
-								hit.t = t;
-								ray.tmax = t;
-							}
-						}
-					}";
-			}
+		template traverse_node(string node_variable_name) {
+			const char[] traverse_node = "
+				const LeafNode* leaf = &" ~ node_variable_name ~ ".leaf;
+				foreach(i; 0 .. leaf.ref_count) {
+				uint prim_id = refs_start[leaf.ref_start + i];
+				if(scene.primitives[prim_id].intersect(ray, t)) {
+				if(ray.tmin <= t && t < ray.tmax) {
+				hit.primId = cast(int)prim_id;
+				hit.t = t;
+				ray.tmax = t;
+				}
+				}
+				}";
+		}
 
-			//NodeId nodeid = stack[--stack_size];
+		while(true) {
 			const Node* node = &nodes[nodeid];
+
+			static if(traversal_params.return_stats)
+				traversal_stats.visited_nodes++;
 
 			if(!eager_traversal && node.is_leaf) {
 				mixin(traverse_node!("node"));
@@ -126,13 +127,10 @@ struct Bvh(PrimitiveType)
 					if(hit0_valid && hit1_valid) {
 						bool hit0_closer = (bbox_hit0[0] < bbox_hit1[0]);
 						stack[stack_size++] = node.inner.child_ids[hit0_closer ? 1 : 0];
-						//stack[stack_size++] = node.inner.child_ids[hit0_closer ? 0 : 1];
 						nodeid = node.inner.child_ids[hit0_closer ? 0 : 1];
 					} else if(hit0_valid) {
-						//stack[stack_size++] = node.inner.child_ids[0];
 						nodeid = node.inner.child_ids[0];
 					} else if(hit1_valid) {
-						//stack[stack_size++] = node.inner.child_ids[1];
 						nodeid = node.inner.child_ids[1];
 					} else {
 						mixin(stack_pop);
@@ -148,7 +146,11 @@ struct Bvh(PrimitiveType)
 				}
 			}
 		}
-		return hit;
+
+		static if(traversal_params.return_stats)
+			return tuple(hit, traversal_stats);
+		else
+			return hit;
 	}
 
 	static sah_cost_leaf(int nprims, float area) {
@@ -210,11 +212,9 @@ struct Bvh(PrimitiveType)
 				
 				LeafNode ln = {ref_start: cast(uint)(references.length), ref_count: cast(uint)(primitives_ids.length)};
 				references ~= primitives_ids;
-				
-				//LeafNode ln = {prims: primitives_ids};
+
 				Node node = { is_leaf: true, leaf: ln };
 				nodes ~= node;
-				//writeln("wrote leaf node", nodeid, "#prims", ln.prims.length);
 				return nodeid;
 			} else {
 				uint[] left = sorted_prims[best_axis][0 .. best_place];
@@ -263,6 +263,8 @@ struct Bvh(PrimitiveType)
 		writeln("Global area ", bbox.area());
 
 		root = build_tree(scene.primitives, prim_ids, bbox.area());
+
+		refs_start = &references[0];
 		writeln("Built tree.");
 	}
 }
