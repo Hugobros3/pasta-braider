@@ -187,7 +187,7 @@ struct Bvh(PrimitiveType)
 					//bbox = bbox.expand(prim.bbox());
 				}
 
-				bbox = BBox3f(primitives[sorted_prims[axis][primitives_ids.length - 1]].center);
+				bbox = BBox3f(primitives[sorted_prims[axis][cast(int)primitives_ids.length - 1]].center);
 				foreach(index; iota(0, primitives_ids.length).retro) {
 					bbox = bbox.expand( primitives[sorted_prims[axis][index]].bbox());
 					float right_area = bbox.area();

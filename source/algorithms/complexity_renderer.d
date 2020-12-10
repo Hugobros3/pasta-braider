@@ -31,7 +31,7 @@ Vec3f to_rgb(HeatmapColorPoint p) {
 @nogc
 Vec3f color_for(int steps) {
     int matchBi = 0;
-    HeatmapColorPoint matchB = colors[colors.length - 1];
+    HeatmapColorPoint matchB = colors[cast(int)colors.length - 1];
     for(int i = 0; i < colors.length; i++) {
         if(colors[i].intensity > steps) {
             matchB = colors[i];

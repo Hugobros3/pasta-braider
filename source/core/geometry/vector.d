@@ -12,25 +12,11 @@ import core.simd;
 
 import fast_math;
 
-version(D_SIMD) {
-    pragma(msg, "yes");
-}
-
 /// Fully generic vector types !
 struct Vec(int dim, T) {
     static assert(dim > 0, "What kind of vector is this even supposed to be");
 
-    /// Actual data container
-    static if(false && dim >= 2 && dim <= 4 && is(T == float)) {
-        //float[4] data;
-        float4 data;
-        static immutable bool is_simd = true;
-        //alias data = _data.ptr;
-        //T[dim] data;
-    } else {
-        T[dim] data;
-        static immutable bool is_simd = false;
-    }
+    T[dim] data;
 
     alias Self = Vec!(dim, T);
 
@@ -38,24 +24,16 @@ struct Vec(int dim, T) {
     pragma(inline, true)
     @nogc pure Self opBinary(string s)(const T scalar) const if (s == "*") {
         Self newVec;
-        static if(is_simd) {
-            newVec.data = data * scalar;
-        } else {
-            static foreach(i; 0 .. dim) {
-                newVec.data[i] = data[i] * scalar;
-            }
+        static foreach(i; 0 .. dim) {
+            newVec.data[i] = data[i] * scalar;
         }
         return newVec;
     }
     pragma(inline, true)
     @nogc pure Self opBinaryRight(string s)(const T scalar) const if (s == "*") {
         Self newVec;
-        static if(is_simd) {
-            newVec.data = data * scalar;
-        } else {
-            static foreach(i; 0 .. dim) {
-                newVec.data[i] = data[i] * scalar;
-            }
+        static foreach(i; 0 .. dim) {
+            newVec.data[i] = data[i] * scalar;
         }
         return newVec;
     }
@@ -65,19 +43,11 @@ struct Vec(int dim, T) {
     pragma(inline, true)
     @nogc pure Self opBinary(string s)(const Self rhs) const if (vectorOperators.canFind(s)) {
         Self newVec;
-        static if(is_simd) {
-            auto a = data;
-            auto b = rhs.data;
-            newVec.data = mixin("a" ~ s ~ "b");
-        } else {
-            static foreach(i; 0 .. dim) {
-                {
-                T a = data[i];
-                T b = rhs.data[i];
-                newVec.data[i] = mixin("a" ~ s ~ "b");
-                }
-            }
-        }
+        static foreach(i; 0 .. dim) {{
+            T a = data[i];
+            T b = rhs.data[i];
+            newVec.data[i] = mixin("a" ~ s ~ "b");
+        }}
         
         //copy(zip(this.data[], rhs.data[]).map!(tuple => mixin("tuple[0]" ~ s ~ "tuple[1]")), newVec.data[]);
         return newVec;
@@ -87,13 +57,8 @@ struct Vec(int dim, T) {
     pragma(inline, true)
     @nogc pure Self opUnary(string s)() const if (s == "-") {
         Self newVec;
-
-        static if(is_simd) {
-            newVec.data = -data;
-        } else {
-            static foreach(i; 0 .. dim) {
-                newVec.data[i] = -data[i];
-            }
+        static foreach(i; 0 .. dim) {
+            newVec.data[i] = -data[i];
         }
         //copy(this.data[].map!(a => -a), newVec.data[]);
         return newVec;
@@ -102,16 +67,8 @@ struct Vec(int dim, T) {
     pragma(inline, true)
     @nogc pure T lengthSquared() const {
         T acc = T(0);
-
-        static if(is_simd) {
-            auto xd = data * data;
-            static foreach(i; 0 .. dim) {
-                acc += xd[i];
-            }
-        } else {
-            static foreach(i; 0 .. dim) {
-                acc += data[i] * data[i];
-            }
+        static foreach(i; 0 .. dim) {
+            acc += data[i] * data[i];
         }
         return acc;
         //return data.fold!((acc, value) => acc + value * value)(cast(T)0);
@@ -200,13 +157,7 @@ struct Vec(int dim, T) {
     }
 
     this(immutable T[dim] values) {
-        static if(is_simd) {
-            static foreach(i; 0 .. dim ){
-                this.data[i] = values[i];
-            }
-        } else {
-            this.data = values;
-        }
+        this.data = values;
     }
 }
 
@@ -214,15 +165,8 @@ struct Vec(int dim, T) {
 pragma(inline, true)
 @nogc pure T dot(int dim, T)(const Vec!(dim, T) lhs, const Vec!(dim, T) rhs) {
     T acc = T(0);
-    static if(Vec!(dim, T).is_simd) {
-        auto xd = lhs.data * rhs.data;
-        static foreach(i; 0 .. dim) {
-            acc += xd[i];
-        }
-    } else {
-        static foreach(i; 0 .. dim) {
-            acc += lhs.data[i] * rhs.data[i];
-        }
+    static foreach(i; 0 .. dim) {
+        acc += lhs.data[i] * rhs.data[i];
     }
     return acc;
     //return (lhs * rhs).data.fold!((T acc, T value) => acc + value);

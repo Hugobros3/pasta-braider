@@ -10,7 +10,7 @@ struct NullAS(PrimitiveType)
 		this.scene = scene;
 	}
 
-	final @nogc Hit intersect(Ray ray) const {
+	@nogc Hit intersect(Ray ray) const {
 		float t;
 		Hit hit;
 		foreach(primId, primitive; scene.primitives) {
