@@ -24,17 +24,16 @@ auto make_direct_lighting_renderer(ColorSpace, PrimitiveType)() {
             Vec3f hitNormal = scene.primitives[hit.primId].normal(hitPoint);
 
             const MaterialRef mat = scene.primitives[hit.primId].material;
-            const BSDFSample bsdfSample = mat.bsdf.sample(ray.direction, hitNormal);
+            const BSDFSample bsdfSample = mat.bsdf.sample(-ray.direction, hitNormal);
 
-            Ray lightRay = { hitPoint + bsdfSample.direction * 0.01, bsdfSample.direction };
+            Ray lightRay = { hitPoint + bsdfSample.direction * 0.01, 0.0, bsdfSample.direction, float.infinity };
             Hit lightHit = scene.intersect(lightRay);
 
             if(lightHit.primId != -1) {
-                const cosTerm = dot(hitNormal, bsdfSample.direction);
-                const Material* lightMat = scene.primitives[lightHit.primId].material;
+                const MaterialRef lightMat = scene.primitives[lightHit.primId].material;
                 const emittedLight = (lightMat.color * lightMat.emission);
 
-                return bsdfSample.value * emittedLight * (cosTerm / bsdfSample.pdf);
+                return bsdfSample.value * emittedLight * (1.0 / bsdfSample.pdf);
             } else {
                 return RGB(0.0);
             }
@@ -56,7 +55,7 @@ auto make_direct_lighting_renderer_explicit_light_sampling(ColorSpace, Primitive
 
             const MaterialRef mat = scene.primitives[hit.primId].material;
 
-            Light light = scene.pickRandomLight();
+            const Light light = scene.pickRandomLight();
             float pdf_light_source = 1.0 / scene.lights.length;
 
             final switch(light.type) {
@@ -74,7 +73,7 @@ auto make_direct_lighting_renderer_explicit_light_sampling(ColorSpace, Primitive
 
                     // Point a ray towards it
                     Vec3f dirToLight = (lightSamplePos - hitPoint).normalize();
-                    Ray rayToLight = { hitPoint + dirToLight * 0.01, dirToLight };
+                    Ray rayToLight = { hitPoint + dirToLight * 0.01, 0.0, dirToLight, float.infinity };
                     float distanceToLight = (lightSamplePos - hitPoint).length();
                     float d2 = distanceToLight * distanceToLight;
                     float inv_d2 = 1.0 / d2;
@@ -89,7 +88,7 @@ auto make_direct_lighting_renderer_explicit_light_sampling(ColorSpace, Primitive
                         float cos_e = max(0.0, dot(hitNormal,       dirToLight));
                         float cos_l = max(0.0, dot(lightSampleNorm, -dirToLight));
 
-                        const Material* lightMat = scene.primitives[light.primitive.index].material;
+                        const MaterialRef lightMat = scene.primitives[light.primitive.index].material;
 
                         //float pdf_e = mat.bsdf.pdf(ray.direction, hitNormal, rayToLight.direction);
                         //float mis = 1.0f / (1.0 + pdf_e * cos_l * inv_d2 / pdf_point_on_light);

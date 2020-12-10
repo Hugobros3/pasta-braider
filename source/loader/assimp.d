@@ -19,7 +19,7 @@ void load_assimp() {
 	foreach(info; loader.errors) {
 		printf(info.error);
 		printf(info.message);
-	}	
+	}
 
 	if(ret == AssimpSupport.noLibrary) {
 		throw new Exception("couldn't find assimp");

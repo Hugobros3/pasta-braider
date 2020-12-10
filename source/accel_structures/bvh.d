@@ -14,8 +14,8 @@ struct Bvh(PrimitiveType)
     if(__traits(compiles, PrimitiveType.intersect))
 {
 	alias NodeId = uint;
-	const auto treeArity = 2;
-	const auto maxPrimsPerLeaf = 4;
+	immutable auto treeArity = 2;
+	immutable auto maxPrimsPerLeaf = 4;
 
 	struct InnerNode {
 		BBox3f[treeArity] child_bboxes;
@@ -65,9 +65,9 @@ struct Bvh(PrimitiveType)
 
 		immutable auto stack_pop =
 			"if(stack_size > 0) {
-			nodeid = stack[--stack_size];
+				nodeid = stack[--stack_size];
 			} else {
-			break;
+				break;
 			}"
 			;
 
@@ -75,14 +75,14 @@ struct Bvh(PrimitiveType)
 			const char[] traverse_node = "
 				const LeafNode* leaf = &" ~ node_variable_name ~ ".leaf;
 				foreach(i; 0 .. leaf.ref_count) {
-				uint prim_id = refs_start[leaf.ref_start + i];
-				if(scene.primitives[prim_id].intersect(ray, t)) {
-				if(ray.tmin <= t && t < ray.tmax) {
-				hit.primId = cast(int)prim_id;
-				hit.t = t;
-				ray.tmax = t;
-				}
-				}
+					uint prim_id = refs_start[leaf.ref_start + i];
+					if(scene.primitives[prim_id].intersect(ray, t)) {
+						if(ray.tmin <= t && t < ray.tmax) {
+							hit.primId = cast(int)prim_id;
+							hit.t = t;
+							ray.tmax = t;
+						}
+					}
 				}";
 		}
 

@@ -31,7 +31,7 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
         Vec3f weight = 1.0;
         while(true) {
             if(depth > 2) {
-                float rr_death_probability = 0.75;
+                float rr_death_probability = 0.25;
                 if(uniform_rng() >= rr_death_probability) {
                     break;
 				} else {
@@ -92,7 +92,8 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
                                 //float mis = 1.0f / (1.0 + pdf_e * cos_l * inv_d2 / pdf_point_on_light);
                                 float mis = 1.0;
 
-                                Vec3f explicitRadianceContrib = (lightMat.color * lightMat.emission) * mat.bsdf.evaluate(ray.direction, hitNormal, rayToLight.direction) * cos_e * cos_l * inv_d2 * (mis / pdf_point_on_light);
+                                auto bsdfValue = mat.bsdf.evaluate(-ray.direction, hitNormal, rayToLight.direction);
+                                Vec3f explicitRadianceContrib = (lightMat.color * lightMat.emission) * bsdfValue * cos_e * cos_l * inv_d2 * (mis / pdf_point_on_light);
 
                                 color = color + explicitRadianceContrib * weight;
                             }
@@ -125,7 +126,7 @@ auto make_path_tracing_renderer(ColorSpace, PrimitiveType)() {
                 Ray bounceRay = { hitPoint, 0.001, bsdfSample.direction, float.infinity};
                 ray = bounceRay;
 
-                weight = weight * bsdfSample.value * (dot(hitNormal, ray.direction) / bsdfSample.pdf);
+                weight = weight * bsdfSample.value * (1.0 / bsdfSample.pdf);
                 last_specular = mat.bsdf.is_specular;
             } else {
                 // "sky" color

@@ -38,6 +38,9 @@ class Window(PrimitiveType) : Film!(RGB) {
     private Camera camera;
     private CameraController controller;
 
+    int algos = 5;
+    int algo = 0;
+
     this(Scene!PrimitiveType scene) { 
         //defaultPoolThreads(16);
 
@@ -60,7 +63,6 @@ class Window(PrimitiveType) : Film!(RGB) {
         camera.lookingAt = Vec3f([1.0, 0.0, 0.0]);
 
         this.scene = scene;
-        //scene = make_cornell_balls_scene();
     }
 
     void run() {
@@ -78,7 +80,7 @@ class Window(PrimitiveType) : Film!(RGB) {
         clear();
         int acc = 0;
         while (!quit) {
-            MonoTime frameStart = MonoTime.currTime;
+            const MonoTime frameStart = MonoTime.currTime;
 
             if(controller.update()) {
                 clear();
@@ -89,12 +91,22 @@ class Window(PrimitiveType) : Film!(RGB) {
             camera.lookingAt = controller.get_view_dir().normalize();
             camera.update();
 
-            //immutable @nogc auto algorithm = make_debug_renderer!(RGB, PrimitiveType);
-            immutable @nogc auto algorithm = make_complexity_renderer!(RGB, PrimitiveType);
-            //immutable @nogc auto algorithm = make_direct_lighting_renderer!(RGB, PrimitiveType);
-            //immutable @nogc auto algorithm = make_direct_lighting_renderer_explicit_light_sampling!(RGB, PrimitiveType);
-            //immutable @nogc auto algorithm = make_path_tracing_renderer!(RGB, PrimitiveType);
-            draw!(algorithm)(this);
+            if (algo == 0) {
+                immutable @nogc auto algorithm = make_debug_renderer!(RGB, PrimitiveType);
+                draw!(algorithm)(this);
+            } else if(algo == 1) {
+                immutable @nogc auto algorithm = make_complexity_renderer!(RGB, PrimitiveType);
+                draw!(algorithm)(this);
+            } else if(algo == 2) {
+                immutable @nogc auto algorithm = make_direct_lighting_renderer!(RGB, PrimitiveType);
+                draw!(algorithm)(this);
+            } else if(algo == 3) {
+                immutable @nogc auto algorithm = make_direct_lighting_renderer_explicit_light_sampling!(RGB, PrimitiveType);
+                draw!(algorithm)(this);
+            } else if(algo == 4) {
+                immutable @nogc auto algorithm = make_path_tracing_renderer!(RGB, PrimitiveType);
+                draw!(algorithm)(this);
+            }
 
             float invAcc = 1.0f / acc;
             
@@ -126,6 +138,14 @@ class Window(PrimitiveType) : Film!(RGB) {
                 switch (event.type) {
                     case SDL_QUIT:
                         quit = true;
+                        break;
+                    case SDL_KEYDOWN:
+                        auto key = event.key.keysym.sym;
+                        if (key == SDLK_a) {
+                            clear();
+                            acc = 0;
+                            algo = (algo + 1) % algos;
+                        }
                         break;
                     default: break;
                 }

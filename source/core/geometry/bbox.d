@@ -51,7 +51,7 @@ pragma(inline, true)
 
 pragma(inline, true)
 @nogc Tuple!(float, float) intersect(const ref BBox3f bbox, const ref Ray ray, const Vec3f ray_inv_dir) {
-	import std.algorithm.comparison;
+	import std.algorithm.comparison : min, max;
     float txmin = fast_multiply_add(bbox.pmin.x, ray_inv_dir.x, -(ray.origin.x * ray_inv_dir.x));
     float txmax = fast_multiply_add(bbox.pmax.x, ray_inv_dir.x, -(ray.origin.x * ray_inv_dir.x));
     float tymin = fast_multiply_add(bbox.pmin.y, ray_inv_dir.y, -(ray.origin.y * ray_inv_dir.y));

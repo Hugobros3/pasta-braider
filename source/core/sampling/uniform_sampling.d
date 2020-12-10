@@ -12,7 +12,7 @@ void seedRng() {
 
 /// Generates a uniform random value between 0 and 1.0
 @nogc float uniform_rng() {
-    float val = (float(rng.front) * (1.0f / ((uint.max))));
+    float val = (float(rng.front) * (1.0f / (uint.max)));
     rng.popFront();
     return val;
 }
