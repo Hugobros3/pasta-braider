@@ -9,7 +9,7 @@ import constants;
 
 import std.math : abs;
 
-struct Triangle {
+pure struct Triangle {
     Vec3f v0, v1, v2;
     Vec3f _normal, e1, e2;
     MaterialRef material;
@@ -38,7 +38,7 @@ struct Triangle {
 	}
 
     pragma(inline, true)
-    @nogc bool intersect(const ref Ray ray, ref float t) const {
+    pure @nogc bool intersect(const ref Ray ray, ref float t) const {
         Vec3f p = cross(ray.direction, e2);
         float determinant = dot(e1, p);
         if(determinant > -EPSILON && determinant < EPSILON)
@@ -65,7 +65,7 @@ struct Triangle {
 	}
 
     pragma(inline, true)
-    @nogc Vec3f normal(const ref Vec3f p) const {
+    pure @nogc Vec3f normal(const ref Vec3f p) const {
         return _normal;
     }
 
@@ -86,12 +86,12 @@ struct Triangle {
 	}
 
     pragma(inline, true)
-    @nogc float area() const {
+    pure @nogc float area() const {
         return (cross(v0, v1) + cross(v1, v2) + cross(v2, v0)).length / 2.0f;
 	}
 
     pragma(inline, true)
-    @nogc BBox3f bbox() const {
+    pure @nogc BBox3f bbox() const {
         BBox3f bbox = v0;
         bbox = bbox.expand(v0);
         bbox = bbox.expand(v1);
@@ -100,7 +100,7 @@ struct Triangle {
     }
 
     pragma(inline, true)
-    @nogc Vec3f center() const {
+    pure @nogc Vec3f center() const {
         return (v0 + v1 + v2) * (1.0 / 3.0);
 	}
 }

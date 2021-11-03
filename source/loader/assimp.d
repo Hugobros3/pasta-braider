@@ -32,7 +32,7 @@ void load_assimp() {
 }
 
 Scene!Triangle load_tri_scene(string filename) {
-    Material skyMaterial =       make_diffuse_material( Vec3f([0.0f, 0.05f, 0.15f]), 1.15f ); 
+    Material skyMaterial =       make_diffuse_material( Vec3f([0.0f, 0.05f, 0.15f]), 0.15f ); 
 
     Material mirrorMat =         make_mirror_material( Vec3f([1.0, 1.0, 1.0]));
 
@@ -41,10 +41,13 @@ Scene!Triangle load_tri_scene(string filename) {
 
     auto scene = new Scene!Triangle();
 
-	const aiScene* aiScene = aiImportFile( toStringz(filename), 
-										   aiPostProcessSteps.CalcTangentSpace       | 
+	const aiScene* aiScene = aiImportFile(toStringz(filename), 
+										  aiPostProcessSteps.CalcTangentSpace       | 
 										  aiPostProcessSteps.Triangulate            |
 										  aiPostProcessSteps.JoinIdenticalVertices  |
+										  aiPostProcessSteps.GenNormals             |
+										  aiPostProcessSteps.GenSmoothNormals       |
+										  aiPostProcessSteps.FixInfacingNormals     |
 										  aiPostProcessSteps.SortByPType);
 	if(!aiScene) {
 		string errstr = fromStringz(aiGetErrorString()).idup()	;
@@ -119,6 +122,9 @@ Scene!Triangle load_tri_scene(string filename) {
 				}
 
 				Vec3f load_normal(uint indice) {
+					if (aiMesh.mNormals == null)
+						return Vec3f(0.0f);
+
 					const aiVector3D vec = aiMesh.mNormals[indice];
 					Vec4f vtx = [ vec.x, vec.y, vec.z, 0.0f ];
 					Vec4f transformedVtx = matrix * vtx;
@@ -163,7 +169,7 @@ Scene!Triangle load_tri_scene(string filename) {
 	type: LightType.SKY,
 	sky: SkyLight(skyMaterial)
     };
-    scene.lights ~= skyLight;
+    //scene.lights ~= skyLight;
 
     scene.process();
 

@@ -1,23 +1,19 @@
 import std.algorithm.iteration;
 import std.algorithm.mutation;
 import std.algorithm.searching;
-//import std.math;
 import std.array;
 import std.range;
 import std.stdio;
 import std.encoding;
 import std.algorithm.comparison : smax = max, smin = min;
 
-import core.simd;
-
 import fast_math;
 
 /// Fully generic vector types !
-struct Vec(int dim, T) {
+pure struct Vec(int dim, T) {
     static assert(dim > 0, "What kind of vector is this even supposed to be");
 
     T[dim] data;
-
     alias Self = Vec!(dim, T);
 
     /// Scalar multiplication
@@ -43,13 +39,7 @@ struct Vec(int dim, T) {
     pragma(inline, true)
     @nogc pure Self opBinary(string s)(const Self rhs) const if (vectorOperators.canFind(s)) {
         Self newVec;
-        static foreach(i; 0 .. dim) {{
-            T a = data[i];
-            T b = rhs.data[i];
-            newVec.data[i] = mixin("a" ~ s ~ "b");
-        }}
-        
-        //copy(zip(this.data[], rhs.data[]).map!(tuple => mixin("tuple[0]" ~ s ~ "tuple[1]")), newVec.data[]);
+        copy(zip(this.data[], rhs.data[]).map!(tuple => mixin("tuple[0]" ~ s ~ "tuple[1]")), newVec.data[]);
         return newVec;
     }
 
@@ -57,21 +47,13 @@ struct Vec(int dim, T) {
     pragma(inline, true)
     @nogc pure Self opUnary(string s)() const if (s == "-") {
         Self newVec;
-        static foreach(i; 0 .. dim) {
-            newVec.data[i] = -data[i];
-        }
-        //copy(this.data[].map!(a => -a), newVec.data[]);
+        copy(this.data[].map!(a => -a), newVec.data[]);
         return newVec;
     }
 
     pragma(inline, true)
     @nogc pure T lengthSquared() const {
-        T acc = T(0);
-        static foreach(i; 0 .. dim) {
-            acc += data[i] * data[i];
-        }
-        return acc;
-        //return data.fold!((acc, value) => acc + value * value)(cast(T)0);
+        return data.fold!((acc, value) => acc + value * value)(cast(T)0);
     }
 
     pragma(inline, true)
@@ -152,11 +134,11 @@ struct Vec(int dim, T) {
         }
     }
 
-    this(T scalar) {    
+    pure this(T scalar) {    
         data[].fill(scalar);
     }
 
-    this(immutable T[dim] values) {
+    pure this(immutable T[dim] values) {
         this.data = values;
     }
 }

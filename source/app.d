@@ -3,6 +3,7 @@ import window;
 
 import scene;
 
+import balls;
 import cornell_balls;
 import sphere;
 
@@ -11,7 +12,8 @@ import assimp;
 
 void main(string[] args) {
     load_assimp();
-    //scope auto window = new Window!Triangle(load_tri_scene("scenes/cornell.glb"));
-    scope auto window = new Window!Sphere(make_cornell_balls_scene());
+    auto scene = args.length >= 2 ? args[1] : "scenes/cornell.glb";
+    scope auto window = new Window!Triangle(load_tri_scene(scene));
+    //scope auto window = new Window!Sphere(make_balls_scene());
     window.run();
 }

@@ -10,12 +10,13 @@ import std.range;
 import std.stdio;
 import std.typecons;
 
+immutable auto treeArity = 2;
+immutable auto maxPrimsPerLeaf = 4;
+
 struct Bvh(PrimitiveType)
     if(__traits(compiles, PrimitiveType.intersect))
 {
 	alias NodeId = uint;
-	immutable auto treeArity = 2;
-	immutable auto maxPrimsPerLeaf = 4;
 
 	struct InnerNode {
 		BBox3f[treeArity] child_bboxes;
@@ -74,6 +75,7 @@ struct Bvh(PrimitiveType)
 		template traverse_node(string node_variable_name) {
 			const char[] traverse_node = "
 				const LeafNode* leaf = &" ~ node_variable_name ~ ".leaf;
+				
 				foreach(i; 0 .. leaf.ref_count) {
 					uint prim_id = refs_start[leaf.ref_start + i];
 					if(scene.primitives[prim_id].intersect(ray, t)) {
@@ -84,6 +86,52 @@ struct Bvh(PrimitiveType)
 						}
 					}
 				}";
+			const char[] traverse_node_ = "
+				const LeafNode* leaf = &" ~ node_variable_name ~ ".leaf;
+				
+				foreach(j; 0 .. leaf.ref_count / maxPrimsPerLeaf) {
+					float[maxPrimsPerLeaf] ts;
+					uint[maxPrimsPerLeaf] pid;
+					foreach(lane; 0 .. maxPrimsPerLeaf) {{
+						uint i = lane + j * maxPrimsPerLeaf;
+						bool valid = i < leaf.ref_count;
+						uint prim_id = valid ? refs_start[leaf.ref_start + i] : 0;
+						pid[i] = prim_id;
+						scene.primitives[prim_id].intersect(ray, ts[i]);
+						valid &= ray.tmin <= ts[i] && ts[i] < ray.tmax;
+						if (!valid) {
+							ts[i] = float.infinity;
+						}
+					}}
+
+					uint best01;
+					if(ts[0] < ts[1])
+						best01 = 0;
+					else
+						best01 = 1;
+					
+					uint best23;
+					if(ts[2] < ts[3])
+						best23 = 2;
+					else
+						best23 = 3;
+
+					uint best0123;
+					if(ts[best01] < ts[best23]) {
+						best0123 = best01;
+					} else {
+						best0123 = best23;
+					}
+
+					t = ts[best0123];
+					if(t != float.infinity) {
+						hit.primId = cast(int)pid[best0123];
+						hit.t = t;
+						ray.tmax = t;
+					}
+				}
+
+				";
 		}
 
 		while(true) {
